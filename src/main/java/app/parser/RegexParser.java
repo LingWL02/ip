@@ -21,7 +21,6 @@ public class RegexParser<T> {
                         "Attempted to add Pattern %s which already exists".formatted(pattern.toString())
                 );
             }
-
             this.patternTagMappings.put(pattern, tag);
         }
     }

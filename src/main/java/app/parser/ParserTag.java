@@ -4,4 +4,6 @@ public enum ParserTag {
     BYE,
     LIST,
     ADD,
+    MARK,
+    UNMARK
 }
