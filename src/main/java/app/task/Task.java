@@ -1,4 +1,4 @@
-package app;
+package app.task;
 
 public interface Task {
 }

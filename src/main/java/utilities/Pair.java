@@ -1,19 +1,19 @@
 package utilities;
 
-public class Pair<T, U>{
-    private final T first;
-    private final U second;
+public class Pair<K, V>{
+    private final K key;
+    private final V value;
 
-    public Pair(T first, U second) {
-        this.first = first;
-        this.second = second;
+    public Pair(K key, V value) {
+        this.key = key;
+        this.value = value;
     }
 
-    public T getFirst() {
-        return this.first;
+    public K getKey() {
+        return this.key;
     }
 
-    public U getSecond() {
-        return this.second;
+    public V getValue() {
+        return this.value;
     }
 }
