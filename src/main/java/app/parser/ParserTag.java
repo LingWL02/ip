@@ -1,6 +1,7 @@
 package app.parser;
 
 public enum ParserTag {
-    TERMINATE,
-    GAY
+    BYE,
+    LIST,
+    ADD,
 }

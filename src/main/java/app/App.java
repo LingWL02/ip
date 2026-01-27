@@ -1,5 +1,6 @@
 package app;
 
+import java.awt.event.PaintEvent;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -11,6 +12,8 @@ import app.parser.RegexParser;
 import app.parser.ParserTag;
 import app.parser.DuplicatePatternException;
 import utilities.Pair;
+
+import javax.swing.text.html.parser.Parser;
 
 public class App {
     private final String botName;
@@ -30,7 +33,9 @@ public class App {
         try {
             this.regexParser.addPatternTagMappings(
                     Map.ofEntries(
-                            Map.entry(Pattern.compile("^bye$"), ParserTag.TERMINATE)
+                            Map.entry(Pattern.compile("^bye$"), ParserTag.BYE),
+                            Map.entry(Pattern.compile("^list$"), ParserTag.LIST),
+                            Map.entry(Pattern.compile("^add$"), ParserTag.ADD)
                     )
             );
         }
@@ -48,7 +53,9 @@ public class App {
             List<Pair<ParserTag, Matcher>> parsedResults = this.regexParser.parse(userInput);
 
             if (parsedResults.isEmpty()) {
-                this.printToStdOut("Unrecognized command, please try again.");
+//                this.printToStdOut("Unrecognized command, please try again.");
+                this.taskList.add(userInput.trim());
+                this.printToStdOut("Added: %s".formatted(userInput.trim()));
                 continue;
             }
             else if (parsedResults.size() > 1) {
@@ -56,11 +63,17 @@ public class App {
                 return;
             }
 
-            ParserTag tag = parsedResults.getFirst().getKey();
+            Pair<ParserTag, Matcher> parsedResult = parsedResults.getFirst();
+            ParserTag tag = parsedResult.getKey();
+            Matcher matcher = parsedResult.getValue();
+
             switch (tag) {
-                case TERMINATE -> {
+                case ParserTag.BYE -> {
                     break appLoop;
                 }
+
+                case ParserTag.LIST -> this.printToStdOut(this.taskList.toString());
+
                 default -> this.printToStdOut("TODO: Tag not implemented.");
             }
         }
