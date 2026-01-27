@@ -1,6 +1,8 @@
+import app.App;
+
 public class Duke {
     public static void main(String[] args) {
-        Application app = new Application("Lil Bro", "_".repeat(50));
+        App app = new App("Lil Bro", "_".repeat(50));
 
         app.run();
     }
