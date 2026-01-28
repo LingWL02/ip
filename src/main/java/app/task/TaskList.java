@@ -36,6 +36,7 @@ public class TaskList {
             );
         }
         Task task = this.taskList.get(index - 1);
+
         if (!task.getIsMarked()) {
             throw new TaskIsUnmarkedException(
                 "Task %s has already been unmarked.".formatted(task.getName())
@@ -46,12 +47,13 @@ public class TaskList {
     }
 
 
+    @Override
     public String toString() {
         StringBuilder bobTheBuilder = new StringBuilder();
 
         for (int i = 0; i < this.taskList.size(); i++) {
             Task task = taskList.get(i);
-            bobTheBuilder.append("\n%d. %s".formatted(i + 1, task.toString()));
+            bobTheBuilder.append("%s%d. %s".formatted((i > 0) ? "\n" : "", i + 1, task.toString()));
         }
         return bobTheBuilder.toString();
     }

@@ -1,6 +1,6 @@
 package app.task;
 
-public class Task {
+public abstract class Task {
     private final String name;
     private Boolean isMarked = false;
 
@@ -13,6 +13,8 @@ public class Task {
         this.isMarked = marked;
     }
 
+
+    @Override
     public String toString() {
         return "[%s] %s".formatted((this.isMarked ? "X" : " "), this.name);
     }

@@ -3,7 +3,10 @@ package app.parser;
 public enum ParserTag {
     BYE,
     LIST,
-    ADD,
+    ADD,  // DEPRECATED
     MARK,
-    UNMARK
+    UNMARK,
+    TODO,
+    DEADLINE,
+    EVENT,
 }
