@@ -99,10 +99,49 @@ public class Vinux {
                         System.out.println("    Excuse me? Tell me which task you want to mark clearly.");
                         System.out.println("    Try this: unmark 1");
                     }
+                } else if (input.startsWith("delete ")) { //Level-6: delete a task
+                    //error handling for delete command
+                    try {
+                        //parseInt --> convert string to integer
+                        //gets everything from position 7 (e.g. "delete 3" --> 3 is at position 7)
+                        int taskNumber = Integer.parseInt(input.substring(7)) - 1; //get task number
+
+                        //check if task number is valid
+                        if (taskNumber < 0 || taskNumber >= taskCount) {
+                            System.out.println("    Sleepy, much? Task number " + (taskNumber + 1) + " doesn't exist!");
+                            System.out.println("    You only have " + taskCount + " task(s) in the list.");
+                        } else {
+                            //store the deleted task info to display it
+                            String deletedTask = tasks[taskNumber];
+                            String deletedType = taskType[taskNumber];
+                            boolean deletedStatus = isDone[taskNumber];
+                            String status = deletedStatus ? "[X]" : "[ ]";
+
+                            //shift all tasks after the deleted one, one position to the left
+                            for (int i = taskNumber; i < taskCount - 1; i++) {
+                                tasks[i] = tasks[i + 1];
+                                isDone[i] = isDone[i + 1];
+                                taskType[i] = taskType[i + 1];
+                            }
+                            //decrease task count
+                            taskCount--;
+
+                            //display confirmation message
+                            System.out.println("    You sure? I've removed this task:");
+                            System.out.println("    [" + deletedType + "]" + status + " " + deletedTask);
+                            System.out.println("    Now you have " + taskCount + " task(s) in the list.");
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("    Excuse me? Please provide a valid task number.");
+                        System.out.println("    Try this: delete 1");
+                    } catch (StringIndexOutOfBoundsException e) {
+                        System.out.println("    Excuse me? Tell me which task you want to delete clearly.");
+                        System.out.println("    Try this: delete 1");
+                    }
                 } else if (input.startsWith("todo")) { //Level-4: check if ToDo task (no date/time)
                     //Level-5: error handling for todo command
                     if (input.trim().equals("todo") || input.substring(4).trim().isEmpty()) {
-                        //empty todo descriptiom
+                        //empty todo description
                         System.out.println("    Wake up! You are giving me an empty task?");
                         System.out.println("    Try this: todo buy apples");
                     } else {
