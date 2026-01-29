@@ -1,6 +1,23 @@
 import java.util.Scanner;
 
 public class Vinux {
+    //A-Enums: create enum for task types
+    enum TaskType {
+        TODO("T"),
+        DEADLINE("D"),
+        EVENT("E");
+
+        private final String symbol;
+
+        TaskType(String symbol) {
+            this.symbol = symbol;
+        }
+
+        public String getSymbol() {
+            return symbol;
+        }
+    }
+
     public static void main(String[] args) {
         //logo of the chatbox: VINUX
         String logo = "              ________   __\n"
@@ -26,8 +43,8 @@ public class Vinux {
         String[] tasks = new String[100];
         //Level-3: create array to track if tasks are done (true = done, false = not done)
         boolean[] isDone = new boolean[100];
-        //Level-4: create array to track task type: T for ToDos, D for Deadlines, E for Events
-        String[] taskType = new String[100];
+        //A-Enums: Use TaskType enum array instead of String array
+        TaskType[] taskTypes = new TaskType[100];
         int taskCount = 0; //counter to keep track of how many tasks are stored
 
         //initialize scanner to read user input from the console
@@ -50,8 +67,9 @@ public class Vinux {
                     for (int i = 0; i < taskCount; i++) {
                         //Level-3: display [X] if done, [] if not done
                         String status = isDone[i] ? "[X]" : "[ ]";
-                        //display task number, type, status and description
-                        System.out.println("    " + (i + 1) + ".[" + taskType[i] + "]" + status + " " + tasks[i]);
+                        //A-Enums: Use getSymbol() to get the task type symbol
+                        System.out.println("    " + (i + 1) + ".[" + taskTypes[i].getSymbol() + "]"
+                                + status + " " + tasks[i]);
                     }
                 } else if (input.startsWith("mark ")) { //Level-3: mark a task as done
                     //Level-5: Error handling for mark command
@@ -62,9 +80,10 @@ public class Vinux {
 
                         //check if task number is valid
                         if (taskNumber < 0 || taskNumber >= taskCount) {
-                            System.out.println("    Sleepy, much? Task number " + (taskNumber + 1) + " doesn't exist!");
+                            System.out.println("    Sleepy, much? Task number " + (taskNumber + 1)
+                                    + " doesn't exist!");
                             System.out.println("    You only have " + taskCount + " task(s) in the list.");
-                        } else { //normal case--> whne there are no errors
+                        } else { //normal case--> when there are no errors
                             isDone[taskNumber] = true; //set condition as true
                             System.out.println("    Solid! This task is now done (FINALLY!):");
                             System.out.println("        [X] " + tasks[taskNumber]);
@@ -80,12 +99,13 @@ public class Vinux {
                     //Level-5: Error handling for unmark command
                     try {
                         //parseInt --> convert string (e.g. "2" to 2)
-                        //gives everything from position 7 (e.g. "unmark 2" --> 2 is at position 5)
+                        //gives everything from position 7 (e.g. "unmark 2" --> 2 is at position 7)
                         int taskNumber = Integer.parseInt(input.substring(7)) - 1;
 
                         //check if task number is valid
                         if (taskNumber < 0 || taskNumber >= taskCount) {
-                            System.out.println("    Sleepy, much? Task number " + (taskNumber + 1) + " doesn't exist!");
+                            System.out.println("    Sleepy, much? Task number " + (taskNumber + 1)
+                                    + " doesn't exist!");
                             System.out.println("    You only have " + taskCount + " task(s) in the list.");
                         } else {
                             isDone[taskNumber] = false; //set condition as false
@@ -108,12 +128,13 @@ public class Vinux {
 
                         //check if task number is valid
                         if (taskNumber < 0 || taskNumber >= taskCount) {
-                            System.out.println("    Sleepy, much? Task number " + (taskNumber + 1) + " doesn't exist!");
+                            System.out.println("    Sleepy, much? Task number " + (taskNumber + 1)
+                                    + " doesn't exist!");
                             System.out.println("    You only have " + taskCount + " task(s) in the list.");
                         } else {
                             //store the deleted task info to display it
                             String deletedTask = tasks[taskNumber];
-                            String deletedType = taskType[taskNumber];
+                            TaskType deletedType = taskTypes[taskNumber]; //A-Enums: Use TaskType
                             boolean deletedStatus = isDone[taskNumber];
                             String status = deletedStatus ? "[X]" : "[ ]";
 
@@ -121,14 +142,16 @@ public class Vinux {
                             for (int i = taskNumber; i < taskCount - 1; i++) {
                                 tasks[i] = tasks[i + 1];
                                 isDone[i] = isDone[i + 1];
-                                taskType[i] = taskType[i + 1];
+                                taskTypes[i] = taskTypes[i + 1];
                             }
                             //decrease task count
                             taskCount--;
 
                             //display confirmation message
+                            //A-Enums: Use getSymbol() to display task type
                             System.out.println("    You sure? I've removed this task:");
-                            System.out.println("    [" + deletedType + "]" + status + " " + deletedTask);
+                            System.out.println("    [" + deletedType.getSymbol() + "]" + status + " "
+                                    + deletedTask);
                             System.out.println("    Now you have " + taskCount + " task(s) in the list.");
                         }
                     } catch (NumberFormatException e) {
@@ -147,7 +170,7 @@ public class Vinux {
                     } else {
                         String description = input.substring(5); //everything after "todo"
                         tasks[taskCount] = description;
-                        taskType[taskCount] = "T";
+                        taskTypes[taskCount] = TaskType.TODO; //A-Enums: Use enum instead of "T"
                         isDone[taskCount] = false; //task is undone yet
                         taskCount++;
                         System.out.println("    Gotcha. I have now added this task:");
@@ -169,7 +192,7 @@ public class Vinux {
                             System.out.println("    Format: deadline <task> /by <date>");
                         } else {
                             try {
-                                //split the input by "/by" to separate descrption and deadline
+                                //split the input by "/by" to separate description and deadline
                                 String[] parts = details.split(" /by "); //get the task
 
                                 if (parts[0].trim().isEmpty()) {
@@ -182,12 +205,13 @@ public class Vinux {
                                     String description = parts[0]; //get task name
                                     String by = parts[1]; //get deadline
                                     tasks[taskCount] = description + " (by: " + by + ")";
-                                    taskType[taskCount] = "D";
+                                    taskTypes[taskCount] = TaskType.DEADLINE; //A-Enums: Use enum
                                     isDone[taskCount] = false;
-                                    taskCount ++;
+                                    taskCount++;
                                     System.out.println("    Gotcha. I have now added this task:");
                                     System.out.println("        [D][ ] " + description + " (by: " + by + ")");
-                                    System.out.println("    Now you have " + taskCount + " task(s) in the list.");
+                                    System.out.println("    Now you have " + taskCount
+                                            + " task(s) in the list.");
                                 }
                             } catch (Exception e) {
                                 System.out.println("    Wait...something went wrong with the deadline...");
@@ -221,7 +245,7 @@ public class Vinux {
                                     System.out.println("    Uhm...the /to must come after /from!");
                                 } else {
                                     String description = details.substring(0, fromIndex); //get task name
-                                    String from = details.substring(fromIndex + 7, toIndex); //get 'from' date
+                                    String from = details.substring(fromIndex + 7, toIndex); //get date
                                     String to = details.substring(toIndex + 5); //get 'to' date
 
                                     if (description.trim().isEmpty()) {
@@ -231,13 +255,16 @@ public class Vinux {
                                     } else if (to.trim().isEmpty()) {
                                         System.out.println("    Excuse me? When does the event end?");
                                     } else {
-                                        tasks[taskCount] = description + " (from: " + from + " to: " + to + ")";
-                                        taskType[taskCount] = "E";
+                                        tasks[taskCount] = description + " (from: " + from + " to: "
+                                                + to + ")";
+                                        taskTypes[taskCount] = TaskType.EVENT; //A-Enums: Use enum
                                         isDone[taskCount] = false;
-                                        taskCount ++;
+                                        taskCount++;
                                         System.out.println("    Gotcha. I have now added this task:");
-                                        System.out.println("    [E][ ] " + description + " (from: " + from + " to: " + to + ")");
-                                        System.out.println("    Now you have " + taskCount + " task(s) in the list.");
+                                        System.out.println("    [E][ ] " + description + " (from: "
+                                                + from + " to: " + to + ")");
+                                        System.out.println("    Now you have " + taskCount
+                                                + " task(s) in the list.");
                                     }
                                 }
                             } catch (Exception e) {
@@ -249,7 +276,7 @@ public class Vinux {
                 } else {
                     //Level-5: Unknown command error
                     System.out.println("    OOPS!!! I'm sorry, but I don't know what that means :-(");
-                    System.out.println("    Try: todo, deadline, event, list, mark, or unmark");
+                    System.out.println("    Try: todo, deadline, event, list, mark, unmark, or delete");
                 }
 
                 System.out.println("    ____________________________________________________________");
@@ -264,5 +291,21 @@ public class Vinux {
         scanner.close(); //always close the scanner
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
