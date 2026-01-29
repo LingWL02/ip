@@ -1,7 +1,76 @@
-Hello from
- ____        _        
-|  _ \ _   _| | _____ 
-| | | | | | | |/ / _ \
-| |_| | |_| |   <  __/
-|____/ \__,_|_|\_\___|
+__________________________________________________
+
+Hello! I'm Lil Bro!
+What can I do for you?
+__________________________________________________
+
+Todo added:
+[T] [ ] wash clothes
+__________________________________________________
+
+Todo added:
+[T] [ ] buy groceries
+__________________________________________________
+
+Deadline added:
+[D] [ ] cs2103de week 3 ip (by 2026-02-01T23:59)
+__________________________________________________
+
+Event added:
+[E] [ ] running with friends! (start: 2026-01-29T20:00, end: 2026-01-29T22:00)
+__________________________________________________
+
+Task List:
+1. [T] [ ] wash clothes
+2. [T] [ ] buy groceries
+3. [D] [ ] cs2103de week 3 ip (by 2026-02-01T23:59)
+4. [E] [ ] running with friends! (start: 2026-01-29T20:00, end: 2026-01-29T22:00)
+__________________________________________________
+
+Event added:
+[E] [ ] hao wei's birthday! (start: 2026-01-28T00:00, end: 2026-01-28T23:59)
+__________________________________________________
+
+Todo added:
+[T] [ ] buy hao wei's gift
+__________________________________________________
+
+Task List:
+1. [T] [ ] wash clothes
+2. [T] [ ] buy groceries
+3. [D] [ ] cs2103de week 3 ip (by 2026-02-01T23:59)
+4. [E] [ ] running with friends! (start: 2026-01-29T20:00, end: 2026-01-29T22:00)
+5. [E] [ ] hao wei's birthday! (start: 2026-01-28T00:00, end: 2026-01-28T23:59)
+6. [T] [ ] buy hao wei's gift
+__________________________________________________
+
+Marked:
+[D] [X] cs2103de week 3 ip (by 2026-02-01T23:59)
+__________________________________________________
+
+Marked:
+[E] [X] running with friends! (start: 2026-01-29T20:00, end: 2026-01-29T22:00)
+__________________________________________________
+
+Task wash clothes has already been unmarked.
+__________________________________________________
+
+Unmarked:
+[D] [ ] cs2103de week 3 ip (by 2026-02-01T23:59)
+__________________________________________________
+
+Task List:
+1. [T] [ ] wash clothes
+2. [T] [ ] buy groceries
+3. [D] [ ] cs2103de week 3 ip (by 2026-02-01T23:59)
+4. [E] [X] running with friends! (start: 2026-01-29T20:00, end: 2026-01-29T22:00)
+5. [E] [ ] hao wei's birthday! (start: 2026-01-28T00:00, end: 2026-01-28T23:59)
+6. [T] [ ] buy hao wei's gift
+__________________________________________________
+
+Unrecognized command, please try again.
+__________________________________________________
+
+Bye. Hope to see you again soon!
+__________________________________________________
 
