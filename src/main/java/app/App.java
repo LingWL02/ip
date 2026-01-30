@@ -39,7 +39,7 @@ public class App {
         System.out.printf("%s\n\n", this.lineSeparator);
 
         try {
-            this.configureApp();
+            this.configureParser();
         }
         catch (Exception exception) {  // TODO catch more specific exceptions
             this.printToStdOut(
@@ -74,12 +74,11 @@ public class App {
     }
 
 
-    private void configureApp() throws DuplicatePatternException {
+    private void configureParser() throws DuplicatePatternException {
         this.regexParser.addPatternTagMappings(
             Map.ofEntries(
-                Map.entry(Pattern.compile("^\\s*bye\\s*$"), ParserTag.BYE),
+                Map.entry(Pattern.compile("^\\s*bye\\s*(?<arg>.*)$"), ParserTag.BYE),
                 Map.entry(Pattern.compile("^\\s*list\\s*$"), ParserTag.LIST),
-                Map.entry(Pattern.compile("^\\s*add\\s+(.*\\S+)$"), ParserTag.ADD),
                 Map.entry(Pattern.compile("^\\s*mark\\s+(\\d+)\\s*$"), ParserTag.MARK),
                 Map.entry(Pattern.compile("^\\s*unmark\\s+(\\d+)\\s*$"), ParserTag.UNMARK),
                 Map.entry(Pattern.compile("^\\s*todo\\s+(.*\\S+)\\s*$"), ParserTag.TODO),
@@ -106,13 +105,10 @@ public class App {
         Matcher matcher = parsedResult.getValue();
 
         switch (tag) {
-            case ParserTag.BYE -> this.isAlive = false;
+            case ParserTag.BYE -> this.handleBye(matcher);
 
             case ParserTag.LIST -> this.printToStdOut("Task List:\n%s".formatted(this.taskList.toString()));
 
-            case ParserTag.ADD -> {
-                this.printToStdOut("PROHIBITED: Command is deprecated");
-            }
             case ParserTag.MARK -> {
                 Integer index = Integer.parseUnsignedInt(matcher.group(1));
                 try {
@@ -157,4 +153,33 @@ public class App {
             default -> this.printToStdOut("TODO: Tag not implemented.");
         }
     }
+
+
+    private void handleBye(Matcher matcher) {
+        String arg = matcher.group("arg");
+
+        if (!arg.isBlank()) {
+            this.printToStdOut("Command 'bye' does not accept any arguments.");
+            return;
+        }
+        this.isAlive = false;
+    };
+
+
+    private void handleList() {};
+
+
+    private void handleMark() {};
+
+
+    private void handleUnmark() {};
+
+
+    private void handleTodo() {};
+
+
+    private void handleDeadline() {};
+
+
+    private void handleEvent() {};
 }

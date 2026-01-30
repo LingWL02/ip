@@ -26,12 +26,13 @@ public class RegexParser<T> {
     }
 
     public List<Pair<T, Matcher>> parse (String inputString) {
+        String normalizedString = inputString.trim();
         ArrayList<Pair<T, Matcher>> results = new ArrayList<Pair<T, Matcher>>();
         for (Map.Entry<Pattern, T> patternTagMapping : this.patternTagMappings.entrySet()) {
             Pattern pattern = patternTagMapping.getKey();
             T tag = patternTagMapping.getValue();
 
-            Matcher matcher = pattern.matcher(inputString.trim());  // Trim string to normalize
+            Matcher matcher = pattern.matcher(normalizedString.trim());  // Trim string to normalize
 
             if (matcher.matches()) {
                 results.add(new Pair<T, Matcher>(tag, matcher));
