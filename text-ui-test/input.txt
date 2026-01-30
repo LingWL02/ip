@@ -1,0 +1,15 @@
+todo wash clothes
+todo buy groceries
+deadline cs2103de week 3 ip -by 2026-02-01 23:59
+event running with friends! -start 2026-01-29 20:00 -end 2026-01-29 22:00
+list
+event hao wei's birthday! -start 2026-01-28 00:00 -end 2026-01-28 23:59
+todo buy hao wei's gift
+list
+mark 3
+mark 4
+unmark 1
+unmark 3
+list
+unrecognized
+bye
