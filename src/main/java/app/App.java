@@ -8,10 +8,7 @@ import java.util.Scanner;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import app.task.TaskList;
-import app.task.Todo;
-import app.task.Deadline;
-import app.task.Event;
+import app.task.*;
 import app.parser.RegexParser;
 import app.parser.ParserTag;
 import app.parser.DuplicatePatternException;
@@ -43,7 +40,7 @@ public class App {
         }
         catch (Exception exception) {  // TODO catch more specific exceptions
             this.printToStdOut(
-                    "Received exception: %s\nTerminating app...".formatted(exception.toString())
+                    "EXCEPTION: %s\nTerminating app...".formatted(exception.toString())
             );
             return;
         }
@@ -55,7 +52,7 @@ public class App {
             List<Pair<ParserTag, Matcher>> parsedResults = this.regexParser.parse(userInput);
 
             if (parsedResults.isEmpty()) {
-                this.printToStdOut("Unrecognized command, please try again.");
+                this.printToStdOut("UNRECOGNIZED COMMAND: Please try again.");
                 continue;
             }
             else if (parsedResults.size() > 1) {
@@ -77,20 +74,20 @@ public class App {
     private void configureParser() throws DuplicatePatternException {
         this.regexParser.addPatternTagMappings(
             Map.ofEntries(
-                Map.entry(Pattern.compile("^\\s*bye\\s*(?<arg>.*)$"), ParserTag.BYE),
-                Map.entry(Pattern.compile("^\\s*list\\s*$"), ParserTag.LIST),
-                Map.entry(Pattern.compile("^\\s*mark\\s+(\\d+)\\s*$"), ParserTag.MARK),
-                Map.entry(Pattern.compile("^\\s*unmark\\s+(\\d+)\\s*$"), ParserTag.UNMARK),
-                Map.entry(Pattern.compile("^\\s*todo\\s+(.*\\S+)\\s*$"), ParserTag.TODO),
+                Map.entry(Pattern.compile("^\\s*bye\\b\\s*(?<arg>.*)$"), ParserTag.BYE),
+                Map.entry(Pattern.compile("^\\s*list\\b\\s*(?<arg>.*)$"), ParserTag.LIST),
+                Map.entry(Pattern.compile("^\\s*mark\\b\\s*(?<index>.*)\\s*$"), ParserTag.MARK),
+                Map.entry(Pattern.compile("^\\s*unmark\\b\\s*(?<index>.*)\\s*$"), ParserTag.UNMARK),
+                Map.entry(Pattern.compile("^\\s*todo\\b\\s+(.*\\S+)\\s*$"), ParserTag.TODO),
                 Map.entry(Pattern.compile(
                 """
-                ^\\s*deadline\\s+(?<name>.+?)\\s+
+                ^\\s*deadline\\b\\s+(?<name>.+?)\\s+
                 -by\\s+(?<by>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2})\\s*$
                 """, Pattern.COMMENTS
                 ), ParserTag.DEADLINE),
                 Map.entry(Pattern.compile(
                 """
-                ^\\s*event\\s+(?<name>.+?)\\s+
+                ^\\s*event\\b\\s+(?<name>.+?)\\s+
                 -start\\s+(?<start>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2})\\s+
                 -end\\s+(?<end>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2})\\s*$
                 """, Pattern.COMMENTS
@@ -107,26 +104,12 @@ public class App {
         switch (tag) {
             case ParserTag.BYE -> this.handleBye(matcher);
 
-            case ParserTag.LIST -> this.printToStdOut("Task List:\n%s".formatted(this.taskList.toString()));
+            case ParserTag.LIST -> this.handleList(matcher);
 
-            case ParserTag.MARK -> {
-                Integer index = Integer.parseUnsignedInt(matcher.group(1));
-                try {
-                    this.printToStdOut("Marked:\n%s".formatted(this.taskList.mark(index).toString()));
-                }
-                catch (Exception exception) {
-                    printToStdOut(exception.toString());  // TODO catch more specific exceptions
-                }
-            }
-            case ParserTag.UNMARK -> {
-                Integer index = Integer.parseUnsignedInt(matcher.group(1));
-                try {
-                    this.printToStdOut("Unmarked:\n%s".formatted(this.taskList.unmark(index)));
-                }
-                catch (Exception exception) {
-                    printToStdOut(exception.getMessage());  // TODO catch more specific exceptions
-                }
-            }
+            case ParserTag.MARK -> this.handleMark(matcher);
+
+            case ParserTag.UNMARK -> this.handleUnmark(matcher);
+
             case ParserTag.TODO -> {
                 String name = matcher.group(1);
                 Todo todo = new Todo(name);
@@ -159,27 +142,73 @@ public class App {
         String arg = matcher.group("arg");
 
         if (!arg.isBlank()) {
-            this.printToStdOut("Command 'bye' does not accept any arguments.");
+            this.printToStdOut("ILLEGAL ARGUMENTS: Command 'bye' does not accept any arguments.");
             return;
         }
         this.isAlive = false;
-    };
+    }
 
 
-    private void handleList() {};
+    private void handleList(Matcher matcher) {
+        String arg = matcher.group("arg");
+
+        if (!arg.isBlank()) {
+            this.printToStdOut("ILLEGAL ARGUMENTS: Command 'list' does not accept any arguments.");
+            return;
+        }
+        this.printToStdOut("Task List:\n%s".formatted(this.taskList.toString()));
+    }
 
 
-    private void handleMark() {};
+    private void handleMark(Matcher matcher) {
+        String indexString = matcher.group("index");
+
+        if (indexString.isBlank()) {
+            this.printToStdOut("ILLEGAL ARGUMENTS: Command 'mark' expects an argument 'index'.");
+            return;
+        }
+        try {
+            Integer index = Integer.parseUnsignedInt(indexString);
+            this.printToStdOut("Marked:\n%s".formatted(this.taskList.mark(index).toString()));
+        }
+        catch (IndexOutOfBoundsException | TaskIsMarkedException exception) {
+            this.printToStdOut("DISALLOWED: %s".formatted(exception.getMessage()));
+        }
+        catch (NumberFormatException exception) {
+            this.printToStdOut(
+                "ILLEGAL ARGUMENTS: Expected 'index' to be a positive integer, got '%s'".formatted(indexString)
+            );
+        }
+    }
 
 
-    private void handleUnmark() {};
+    private void handleUnmark(Matcher matcher) {
+        String indexString = matcher.group("index");
+
+        if (indexString.isBlank()) {
+            this.printToStdOut("ILLEGAL ARGUMENTS: Command 'unmark' expects an argument 'index'.");
+            return;
+        }
+        try {
+            Integer index = Integer.parseUnsignedInt(indexString);
+            this.printToStdOut("Unmarked:\n%s".formatted(this.taskList.unmark(index).toString()));
+        }
+        catch (IndexOutOfBoundsException | TaskIsUnmarkedException exception) {
+            this.printToStdOut("DISALLOWED: %s".formatted(exception.getMessage()));
+        }
+        catch (NumberFormatException exception) {
+            this.printToStdOut(
+                    "ILLEGAL ARGUMENTS: Expected 'index' to be a positive integer, got '%s'".formatted(indexString)
+            );
+        }
+    }
 
 
-    private void handleTodo() {};
+    private void handleTodo() {}
 
 
-    private void handleDeadline() {};
+    private void handleDeadline() {}
 
 
-    private void handleEvent() {};
+    private void handleEvent() {}
 }

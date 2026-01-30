@@ -21,7 +21,7 @@ public class TaskList {
         Task task = this.taskList.get(index - 1);
         if (task.getIsMarked()) {
             throw new TaskIsMarkedException(
-                "Task %s has already been marked.".formatted(task.getName())
+                "%s has already been marked.".formatted(task.toString())
             );
         }
         task.mark();
@@ -39,7 +39,7 @@ public class TaskList {
 
         if (!task.getIsMarked()) {
             throw new TaskIsUnmarkedException(
-                "Task %s has already been unmarked.".formatted(task.getName())
+                "%s has already been unmarked.".formatted(task.toString())
             );
         }
         task.unmark();
