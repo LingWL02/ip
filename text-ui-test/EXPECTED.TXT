@@ -5,70 +5,103 @@ What can I do for you?
 __________________________________________________
 
 Todo added:
-[T] [ ] wash clothes
-__________________________________________________
-
-Todo added:
-[T] [ ] buy groceries
+[T] [ ] Buy bread
 __________________________________________________
 
 Deadline added:
-[D] [ ] cs2103de week 3 ip (by 2026-02-01T23:59)
+[D] [ ] Submit report (by 2026-12-25T18:00)
 __________________________________________________
 
 Event added:
-[E] [ ] running with friends! (start: 2026-01-29T20:00, end: 2026-01-29T22:00)
+[E] [ ] Workshop (start: 2026-02-01T09:00, end: 2026-02-01T17:00)
 __________________________________________________
 
 Task List:
-1. [T] [ ] wash clothes
-2. [T] [ ] buy groceries
-3. [D] [ ] cs2103de week 3 ip (by 2026-02-01T23:59)
-4. [E] [ ] running with friends! (start: 2026-01-29T20:00, end: 2026-01-29T22:00)
-__________________________________________________
-
-Event added:
-[E] [ ] hao wei's birthday! (start: 2026-01-28T00:00, end: 2026-01-28T23:59)
-__________________________________________________
-
-Todo added:
-[T] [ ] buy hao wei's gift
-__________________________________________________
-
-Task List:
-1. [T] [ ] wash clothes
-2. [T] [ ] buy groceries
-3. [D] [ ] cs2103de week 3 ip (by 2026-02-01T23:59)
-4. [E] [ ] running with friends! (start: 2026-01-29T20:00, end: 2026-01-29T22:00)
-5. [E] [ ] hao wei's birthday! (start: 2026-01-28T00:00, end: 2026-01-28T23:59)
-6. [T] [ ] buy hao wei's gift
+1. [T] [ ] Buy bread
+2. [D] [ ] Submit report (by 2026-12-25T18:00)
+3. [E] [ ] Workshop (start: 2026-02-01T09:00, end: 2026-02-01T17:00)
 __________________________________________________
 
 Marked:
-[D] [X] cs2103de week 3 ip (by 2026-02-01T23:59)
+[T] [X] Buy bread
 __________________________________________________
 
 Marked:
-[E] [X] running with friends! (start: 2026-01-29T20:00, end: 2026-01-29T22:00)
-__________________________________________________
-
-Task wash clothes has already been unmarked.
+[D] [X] Submit report (by 2026-12-25T18:00)
 __________________________________________________
 
 Unmarked:
-[D] [ ] cs2103de week 3 ip (by 2026-02-01T23:59)
+[T] [ ] Buy bread
 __________________________________________________
 
 Task List:
-1. [T] [ ] wash clothes
-2. [T] [ ] buy groceries
-3. [D] [ ] cs2103de week 3 ip (by 2026-02-01T23:59)
-4. [E] [X] running with friends! (start: 2026-01-29T20:00, end: 2026-01-29T22:00)
-5. [E] [ ] hao wei's birthday! (start: 2026-01-28T00:00, end: 2026-01-28T23:59)
-6. [T] [ ] buy hao wei's gift
+1. [T] [ ] Buy bread
+2. [D] [X] Submit report (by 2026-12-25T18:00)
+3. [E] [ ] Workshop (start: 2026-02-01T09:00, end: 2026-02-01T17:00)
 __________________________________________________
 
-Unrecognized command, please try again.
+Deleted:
+[E] [ ] Workshop (start: 2026-02-01T09:00, end: 2026-02-01T17:00)
+2 tasks remaining,
+__________________________________________________
+
+Task List:
+1. [T] [ ] Buy bread
+2. [D] [X] Submit report (by 2026-12-25T18:00)
+__________________________________________________
+
+EXPECTED FORMAT: todo <name>
+MISSING ARGUMENTS: Command 'todo' expects argument 'name'.
+__________________________________________________
+
+EXPECTED FORMAT: mark <index>
+MISSING ARGUMENTS: Command 'mark' expects argument 'index'.
+__________________________________________________
+
+EXPECTED FORMAT: unmark <index>
+MISSING ARGUMENTS: Command 'unmark' expects argument 'index'.
+__________________________________________________
+
+EXPECTED FORMAT: delete <index>
+MISSING ARGUMENTS: Command 'index' expects argument 'index'.
+__________________________________________________
+
+EXPECTED FORMAT: list
+ILLEGAL ARGUMENTS: Command 'list' does not accept any arguments.
+__________________________________________________
+
+EXPECTED FORMAT: bye
+ILLEGAL ARGUMENTS: Command 'bye' does not accept any arguments.
+__________________________________________________
+
+EXPECTED FORMAT: deadline -by <year>-<month>-<day>[,<hour>:<minute>] <name>
+MISSING FLAGS: Command 'deadline' expects flag '-by'
+__________________________________________________
+
+EXPECTED FORMAT: deadline -by <year>-<month>-<day>[,<hour>:<minute>] <name>
+ILLEGAL ARGUMENTS: Invalid value for MonthOfYear (valid values 1 - 12): 13
+__________________________________________________
+
+EXPECTED FORMAT: event -from <year>-<month>-<day>[,<hour>:<minute>] -to <year>-<month>-<day>[,<hour>:<minute>] <name>
+
+MISSING FLAGS: Command 'event' expects flag '-to'.
+__________________________________________________
+
+EXPECTED FORMAT: event -from <year>-<month>-<day>[,<hour>:<minute>] -to <year>-<month>-<day>[,<hour>:<minute>] <name>
+
+MISSING ARGUMENTS: Command 'event' expects argument 'name'.
+__________________________________________________
+
+EXPECTED FORMAT: mark <index>
+DISALLOWED: Index 10 is out of bounds of Task List of size 2.
+__________________________________________________
+
+EXPECTED FORMAT: delete <index>
+DISALLOWED: Index 50 is out of bounds of Task List of size 2.
+__________________________________________________
+
+EXPECTED FORMAT: mark <index>
+DISALLOWED: [D] [X] Submit report (by 2026-12-25T18:00) has already been marked.
 __________________________________________________
 
 Bye. Hope to see you again soon!
