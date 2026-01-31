@@ -1,5 +1,6 @@
 package app;
 
+import java.time.DateTimeException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -74,27 +75,35 @@ public class App {
     private void configureParser() throws DuplicatePatternException {
         this.regexParser.addPatternTagMappings(
                 Map.ofEntries(
-                        Map.entry(Pattern.compile("^\\s*bye\\b(?<arg>\\s+.*)?$"), ParserTag.BYE),
-                        Map.entry(Pattern.compile("^\\s*list\\b(?<arg>\\s+.*)?$"), ParserTag.LIST),
-                        Map.entry(Pattern.compile("^\\s*mark\\b(?<index>\\s+.*)?\\s*$"), ParserTag.MARK),
-                        Map.entry(Pattern.compile("^\\s*unmark\\b(?<index>\\s+.*)?\\s*$"), ParserTag.UNMARK),
-                        Map.entry(Pattern.compile("^\\s*todo\\b(?<name>\\s+.*)?\\s*$"), ParserTag.TODO),
-                        Map.entry(Pattern.compile(
+                    Map.entry(Pattern.compile("^\\s*bye\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.BYE),
+                    Map.entry(Pattern.compile("^\\s*list\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.LIST),
+                    Map.entry(Pattern.compile("^\\s*mark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.MARK),
+                    Map.entry(Pattern.compile("^\\s*unmark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.UNMARK),
+                    Map.entry(Pattern.compile("^\\s*todo\\b(?:\\s+(?<name>.*))?\\s*$"), ParserTag.TODO),
+                    Map.entry(Pattern.compile(
+                    """
+                        ^\\s*deadline\\b
+                        (?<byField>\\s+-by\\b
+                        (?<by>\\s+
+                        (?<year>\\d{4})-(?<month>\\d{1,2})-(?<day>\\d{1,2})
+                        (?:\\s*,\\s*(?<hour>\\d{1,2}):(?<minute>\\d{1,2}))?)?)?
+                        (?:\\s+(?<name>.*))?\\s*$
+                        """, Pattern.COMMENTS), ParserTag.DEADLINE
+                    ),
+                    Map.entry(Pattern.compile(
                         """
-                            ^\\s*deadline\\b
-                            (?<byField>\\s+-by\\b
-                            (?<by>\\s+
-                            (?<year>\\d+)-(?<month>\\d+)-(?<day>\\d+),(?<hour>\\d+):(?<minute>\\d+))?)?
-                            (?<name>\\s+.+)?\\s*$
-                            """, Pattern.COMMENTS), ParserTag.DEADLINE
-                        ),
-                        Map.entry(Pattern.compile(
-                                """
-                                ^\\s*event\\b\\s+(?<name>.+?)\\s+
-                                -start\\s+(?<start>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2})\\s+
-                                -end\\s+(?<end>\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2})\\s*$
-                                """, Pattern.COMMENTS
-                        ), ParserTag.EVENT)
+                        ^\\s*event\\b
+                        (?<fromField>\\s+-from\\b
+                        (?<from>\\s+
+                        (?<fromYear>\\d{4})-(?<fromMonth>\\d{1,2})-(?<fromDay>\\d{1,2})
+                        (?:\\s*,\\s*(?<fromHour>\\d{1,2}):(?<fromMinute>\\d{1,2}))?)?)?
+                        (?<toField>\\s+-to\\b
+                        (?<to>\\s+
+                        (?<toYear>\\d{4})-(?<toMonth>\\d{1,2})-(?<toDay>\\d{1,2})
+                        (?:\\s*,\\s*(?<toHour>\\d{1,2}):(?<toMinute>\\d{1,2}))?)?)?
+                        (?:\\s+(?<name>.*))?\\s*$
+                        """, Pattern.COMMENTS), ParserTag.EVENT
+                    )
                 )
         );
     }
@@ -216,7 +225,7 @@ public class App {
 
 
     private void handleDeadline(Matcher matcher) {
-        String expectedFormatMessage = "deadline -by <YYYY>-<MM>-<DD>,<HH>:<MM> <name>";
+        String expectedFormatMessage = "deadline -by <year>-<month>-<day>[,<hour>:<minute>] <name>";
         String byField = matcher.group("byField");
         String by = matcher.group("by");
         String name = matcher.group("name");
@@ -226,21 +235,103 @@ public class App {
             printMissingFlags(expectedFormatMessage, "Command 'deadline' expects flag '-by'");
             return;
         }
-
         if (by == null) {
-            printIllegalFlags(expectedFormatMessage, "Command 'deadline' flag '-by' expects... TODO");
-        }
-
+            printIllegalFlags(
+                expectedFormatMessage,
+                "Command 'deadline' flag '-by' expects date and time in the specified format."
+            );
+            return;
+            }
         if (name == null) {
             printMissingArguments(expectedFormatMessage, "Command 'deadline' expects argument 'name'");
+            return;
         }
+        String yearString = matcher.group("year");
+        String monthString = matcher.group("month");
+        String dayString = matcher.group("day");
+        String hourString = matcher.group("hour");
+        String minuteString = matcher.group("minute");
 
-        // Parse and add task logic goes here
+        int year = Integer.parseUnsignedInt(yearString);
+        int month = Integer.parseUnsignedInt(monthString);
+        int day = Integer.parseUnsignedInt(dayString);
+        int hour = (hourString == null) ? 23 : Integer.parseUnsignedInt(hourString);
+        int minute = (minuteString == null) ? 59 : Integer.parseUnsignedInt(minuteString);
+
+        try {
+            LocalDateTime dateTime = LocalDateTime.of(year, month, day, hour, minute);
+            Deadline deadline = new Deadline(name, dateTime);
+            this.taskList.add(deadline);
+            this.printToStdOut("Deadline added:\n%s".formatted(deadline.toString()));
+        }
+        catch (DateTimeException exception) {
+            printIllegalArguments(expectedFormatMessage, exception.getMessage());
+        }
     }
 
 
     private void handleEvent(Matcher matcher) {
-        // TODO
+        String expectedFormatMessage =
+            """
+            event -from <year>-<month>-<day>[,<hour>:<minute>] -to <year>-<month>-<day>[,<hour>:<minute>] <name>
+            """;
+
+        String fromField = matcher.group("fromField");
+        String from = matcher.group("from");
+        String toField = matcher.group("toField");
+        String to = matcher.group("to");
+        String name = matcher.group("name");
+
+        if (fromField == null) {
+            this.printMissingFlags(expectedFormatMessage, "Command 'event' expects flag '-from'.");
+            return;
+        }
+        if (toField == null) {
+            this.printMissingFlags(expectedFormatMessage, "Command 'event' expects flag '-to'.");
+            return;
+        }
+        if (from == null) {
+            this.printIllegalFlags(
+                    expectedFormatMessage,
+                    "Command 'event' flag '-from' expects a valid date/time.");
+            return;
+        }
+        if (to == null) {
+            this.printIllegalFlags(
+                    expectedFormatMessage,
+                    "Command 'event' flag '-to' expects a valid date/time.");
+            return;
+        }
+        if (name == null) {
+            this.printMissingArguments(expectedFormatMessage, "Command 'event' expects argument 'name'.");
+            return;
+        }
+        int fromYear = Integer.parseUnsignedInt(matcher.group("fromYear"));
+        int fromMonth = Integer.parseUnsignedInt(matcher.group("fromMonth"));
+        int fromDay = Integer.parseUnsignedInt(matcher.group("fromDay"));
+        String fromHourStr = matcher.group("fromHour");
+        String fromMinStr = matcher.group("fromMinute");
+        int fromHour = (fromHourStr == null) ? 0 : Integer.parseUnsignedInt(fromHourStr);
+        int fromMin = (fromMinStr == null) ? 0 : Integer.parseUnsignedInt(fromMinStr);
+
+        int toYear = Integer.parseUnsignedInt(matcher.group("toYear"));
+        int toMonth = Integer.parseUnsignedInt(matcher.group("toMonth"));
+        int toDay = Integer.parseUnsignedInt(matcher.group("toDay"));
+        String toHourStr = matcher.group("toHour");
+        String toMinStr = matcher.group("toMinute");
+        int toHour = (toHourStr == null) ? 23 : Integer.parseUnsignedInt(toHourStr);
+        int toMin = (toMinStr == null) ? 59 : Integer.parseUnsignedInt(toMinStr);
+
+        try {
+            LocalDateTime startDateTime = LocalDateTime.of(fromYear, fromMonth, fromDay, fromHour, fromMin);
+            LocalDateTime endDateTime = LocalDateTime.of(toYear, toMonth, toDay, toHour, toMin);
+            Event event = new Event(name.strip(), startDateTime, endDateTime);
+            this.taskList.add(event);
+            this.printToStdOut("Event added:\n%s".formatted(event.toString()));
+        }
+        catch (DateTimeException exception) {
+            printIllegalArguments(expectedFormatMessage, exception.getMessage());
+        }
     }
 
     private void printIllegalArguments(String expectedFormatMessage, String errorMessage) {
