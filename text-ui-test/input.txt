@@ -1,15 +1,24 @@
-todo wash clothes
-todo buy groceries
-deadline cs2103de week 3 ip -by 2026-02-01 23:59
-event running with friends! -start 2026-01-29 20:00 -end 2026-01-29 22:00
+todo Buy bread
+deadline -by 2026-12-25, 18:00 Submit report
+event -from 2026-02-01, 09:00 -to 2026-02-01, 17:00 Workshop
 list
-event hao wei's birthday! -start 2026-01-28 00:00 -end 2026-01-28 23:59
-todo buy hao wei's gift
-list
-mark 3
-mark 4
+mark 1
+mark 2
 unmark 1
-unmark 3
 list
-unrecognized
+delete 3
+list
+todo
+mark
+unmark
+delete
+list extra_stuff
+bye no_args_allowed
+deadline My Homework
+deadline -by 2026-13-40 Fix the world
+event -from 2026-01-01 Party
+event -from 2026-01-01 -to 2026-01-02
+mark 10
+delete 50
+mark 2
 bye
