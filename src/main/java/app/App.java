@@ -121,7 +121,9 @@ public class App {
         String arg = matcher.group("arg");
 
         if (arg != null) {
-            this.printIllegalArguments("Command 'bye' does not accept any arguments.");
+            this.printIllegalArguments(
+                "bye",
+                "Command 'bye' does not accept any arguments.");
             return;
         }
         this.isAlive = false;
@@ -132,7 +134,9 @@ public class App {
         String arg = matcher.group("arg");
 
         if (arg != null) {
-            this.printIllegalArguments("Command 'list' does not accept any arguments.");
+            this.printIllegalArguments(
+                "list",
+                "Command 'list' does not accept any arguments.");
             return;
         }
         this.printToStdOut("Task List:\n%s".formatted(this.taskList.toString()));
@@ -141,9 +145,12 @@ public class App {
 
     private void handleMark(Matcher matcher) {
         String indexString = matcher.group("index");
+        String expectedFormatMessage = "mark <index>";
 
         if (indexString == null) {
-            this.printMissingArguments("Command 'mark' expects argument 'index'.");
+            this.printMissingArguments(
+                expectedFormatMessage, "Command 'mark' expects argument 'index'."
+            );
             return;
         }
         indexString = indexString.strip();
@@ -153,10 +160,11 @@ public class App {
             this.printToStdOut("Marked:\n%s".formatted(this.taskList.mark(index).toString()));
         }
         catch (IndexOutOfBoundsException | TaskIsMarkedException exception) {
-            this.printDisallowed(exception.getMessage());
+            this.printDisallowed(expectedFormatMessage, exception.getMessage());
         }
         catch (NumberFormatException exception) {
             this.printIllegalArguments(
+                expectedFormatMessage,
                 "Command 'mark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
         }
@@ -165,9 +173,12 @@ public class App {
 
     private void handleUnmark(Matcher matcher) {
         String indexString = matcher.group("index");
+        String expectedFormatMessage = "unmark <index>";
 
         if (indexString == null) {
-            this.printMissingArguments("Command 'unmark' expects argument 'index'.");
+            this.printMissingArguments(
+                expectedFormatMessage, "Command 'unmark' expects argument 'index'."
+            );
             return;
         }
         indexString = indexString.strip();
@@ -177,10 +188,11 @@ public class App {
             this.printToStdOut("Unmarked:\n%s".formatted(this.taskList.unmark(index).toString()));
         }
         catch (IndexOutOfBoundsException | TaskIsUnmarkedException exception) {
-            this.printDisallowed(exception.getMessage());
+            this.printDisallowed(expectedFormatMessage, exception.getMessage());
         }
         catch (NumberFormatException exception) {
             this.printIllegalArguments(
+                expectedFormatMessage,
                 "Command 'unmark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
         }
@@ -190,7 +202,10 @@ public class App {
     private void handleTodo(Matcher matcher) {
         String name = matcher.group("name");
         if (name == null) {
-            this.printMissingArguments("Command 'todo' expects argument 'name'.");
+            this.printMissingArguments(
+                "todo <name>",
+                "Command 'todo' expects argument 'name'."
+            );
             return;
         }
         name = name.strip();
@@ -201,23 +216,23 @@ public class App {
 
 
     private void handleDeadline(Matcher matcher) {
-        String name = matcher.group("name");
+        String expectedFormatMessage = "deadline -by <YYYY>-<MM>-<DD>,<HH>:<MM> <name>";
         String byField = matcher.group("byField");
         String by = matcher.group("by");
+        String name = matcher.group("name");
 
-        if (name == null) {
-            this.printMissingArguments("Command 'deadline' expects argument 'name'.");
-            return;
-        }
 
         if (byField == null) {
-            this.printMissingArguments("Command 'deadline' expects flag '-by'.");
+            printMissingFlags(expectedFormatMessage, "Command 'deadline' expects flag '-by'");
             return;
         }
 
         if (by == null) {
-            this.printIllegalArguments("Flag '-by' expects a date-time argument (yyyy-MM-dd,HH:mm).");
-            return;
+            printIllegalFlags(expectedFormatMessage, "Command 'deadline' flag '-by' expects... TODO");
+        }
+
+        if (name == null) {
+            printMissingArguments(expectedFormatMessage, "Command 'deadline' expects argument 'name'");
         }
 
         // Parse and add task logic goes here
@@ -225,37 +240,26 @@ public class App {
 
 
     private void handleEvent(Matcher matcher) {
-        String name = matcher.group("name");
-        String start = matcher.group("start");
-        String end = matcher.group("end");
-
-        if (name == null || start == null || end == null) {
-            this.printMissingArguments("Command 'event' expects 'name', '-start', and '-end' arguments.");
-            return;
-        }
-
-        try {
-            LocalDateTime startTime = LocalDateTime.parse(start, this.dateTimeFormatter);
-            LocalDateTime endTime = LocalDateTime.parse(end, this.dateTimeFormatter);
-            Event event = new Event(name.strip(), startTime, endTime);
-            this.taskList.add(event);
-            this.printToStdOut("Event added:\n%s".formatted(event.toString()));
-        } catch (Exception e) {
-            this.printIllegalArguments("Invalid date format for event. Use yyyy-MM-dd HH:mm.");
-        }
+        // TODO
     }
 
-
-    private void printIllegalArguments(String message) {
-        this.printToStdOut("ILLEGAL ARGUMENTS: %s".formatted(message));
+    private void printIllegalArguments(String expectedFormatMessage, String errorMessage) {
+        this.printToStdOut("EXPECTED FORMAT: %s\nILLEGAL ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage));
     }
 
-    private void printMissingArguments(String message) {
-        this.printToStdOut("MISSING ARGUMENTS: %s".formatted(message));
+    private void printMissingArguments(String expectedFormatMessage, String errorMessage) {
+        this.printToStdOut("EXPECTED FORMAT: %s\nMISSING ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage));
     }
 
-    private void printDisallowed(String message) {
-        this.printToStdOut("DISALLOWED: %s".formatted(message));
+    private void printDisallowed(String expectedFormatMessage, String errorMessage) {
+        this.printToStdOut("EXPECTED FORMAT: %s\nDISALLOWED: %s".formatted(expectedFormatMessage, errorMessage));
     }
 
+    private void printMissingFlags(String expectedFormatMessage, String errorMessage) {
+        this.printToStdOut("EXPECTED FORMAT: %s\nMISSING FLAGS: %s".formatted(expectedFormatMessage, errorMessage));
+    }
+
+    private void printIllegalFlags(String expectedFormatMessage, String errorMessage) {
+        this.printToStdOut("EXPECTED FORMAT: %s\nILLEGAL FLAGS: %s".formatted(expectedFormatMessage, errorMessage));
+    }
 }
