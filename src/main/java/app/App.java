@@ -74,37 +74,38 @@ public class App {
 
     private void configureParser() throws DuplicatePatternException {
         this.regexParser.addPatternTagMappings(
-                Map.ofEntries(
-                    Map.entry(Pattern.compile("^\\s*bye\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.BYE),
-                    Map.entry(Pattern.compile("^\\s*list\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.LIST),
-                    Map.entry(Pattern.compile("^\\s*mark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.MARK),
-                    Map.entry(Pattern.compile("^\\s*unmark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.UNMARK),
-                    Map.entry(Pattern.compile("^\\s*todo\\b(?:\\s+(?<name>.*))?\\s*$"), ParserTag.TODO),
-                    Map.entry(Pattern.compile(
+            Map.ofEntries(
+                Map.entry(Pattern.compile("^\\s*bye\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.BYE),
+                Map.entry(Pattern.compile("^\\s*list\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.LIST),
+                Map.entry(Pattern.compile("^\\s*mark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.MARK),
+                Map.entry(Pattern.compile("^\\s*unmark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.UNMARK),
+                Map.entry(Pattern.compile("^\\s*todo\\b(?:\\s+(?<name>.*))?\\s*$"), ParserTag.TODO),
+                Map.entry(Pattern.compile(
+                """
+                    ^\\s*deadline\\b
+                    (?<byField>\\s+-by\\b
+                    (?<by>\\s+
+                    (?<year>\\d{4})-(?<month>\\d{1,2})-(?<day>\\d{1,2})
+                    (?:\\s*,\\s*(?<hour>\\d{1,2}):(?<minute>\\d{1,2}))?)?)?
+                    (?:\\s+(?<name>.*))?\\s*$
+                    """, Pattern.COMMENTS), ParserTag.DEADLINE
+                ),
+                Map.entry(Pattern.compile(
                     """
-                        ^\\s*deadline\\b
-                        (?<byField>\\s+-by\\b
-                        (?<by>\\s+
-                        (?<year>\\d{4})-(?<month>\\d{1,2})-(?<day>\\d{1,2})
-                        (?:\\s*,\\s*(?<hour>\\d{1,2}):(?<minute>\\d{1,2}))?)?)?
-                        (?:\\s+(?<name>.*))?\\s*$
-                        """, Pattern.COMMENTS), ParserTag.DEADLINE
-                    ),
-                    Map.entry(Pattern.compile(
-                        """
-                        ^\\s*event\\b
-                        (?<fromField>\\s+-from\\b
-                        (?<from>\\s+
-                        (?<fromYear>\\d{4})-(?<fromMonth>\\d{1,2})-(?<fromDay>\\d{1,2})
-                        (?:\\s*,\\s*(?<fromHour>\\d{1,2}):(?<fromMinute>\\d{1,2}))?)?)?
-                        (?<toField>\\s+-to\\b
-                        (?<to>\\s+
-                        (?<toYear>\\d{4})-(?<toMonth>\\d{1,2})-(?<toDay>\\d{1,2})
-                        (?:\\s*,\\s*(?<toHour>\\d{1,2}):(?<toMinute>\\d{1,2}))?)?)?
-                        (?:\\s+(?<name>.*))?\\s*$
-                        """, Pattern.COMMENTS), ParserTag.EVENT
-                    )
-                )
+                    ^\\s*event\\b
+                    (?<fromField>\\s+-from\\b
+                    (?<from>\\s+
+                    (?<fromYear>\\d{4})-(?<fromMonth>\\d{1,2})-(?<fromDay>\\d{1,2})
+                    (?:\\s*,\\s*(?<fromHour>\\d{1,2}):(?<fromMinute>\\d{1,2}))?)?)?
+                    (?<toField>\\s+-to\\b
+                    (?<to>\\s+
+                    (?<toYear>\\d{4})-(?<toMonth>\\d{1,2})-(?<toDay>\\d{1,2})
+                    (?:\\s*,\\s*(?<toHour>\\d{1,2}):(?<toMinute>\\d{1,2}))?)?)?
+                    (?:\\s+(?<name>.*))?\\s*$
+                    """, Pattern.COMMENTS), ParserTag.EVENT
+                ),
+                Map.entry(Pattern.compile("^\\s*delete\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.DELETE)
+            )
         );
     }
 
@@ -114,13 +115,14 @@ public class App {
         Matcher matcher = parsedResult.getValue();
 
         switch (tag) {
-            case ParserTag.BYE -> this.handleBye(matcher);
-            case ParserTag.LIST -> this.handleList(matcher);
-            case ParserTag.MARK -> this.handleMark(matcher);
-            case ParserTag.UNMARK -> this.handleUnmark(matcher);
-            case ParserTag.TODO -> this.handleTodo(matcher);
-            case ParserTag.DEADLINE -> this.handleDeadline(matcher);
-            case ParserTag.EVENT -> this.handleEvent(matcher);
+            case BYE -> this.handleBye(matcher);
+            case LIST -> this.handleList(matcher);
+            case MARK -> this.handleMark(matcher);
+            case UNMARK -> this.handleUnmark(matcher);
+            case TODO -> this.handleTodo(matcher);
+            case DEADLINE -> this.handleDeadline(matcher);
+            case EVENT -> this.handleEvent(matcher);
+            case DELETE -> this.handleDelete(matcher);
             default -> this.printToStdOut("TODO: Tag not implemented.");
         }
     }
@@ -333,6 +335,40 @@ public class App {
             printIllegalArguments(expectedFormatMessage, exception.getMessage());
         }
     }
+
+
+    private void handleDelete(Matcher matcher) {
+        String indexString = matcher.group("index");
+        String expectedFormatMessage = "delete <index>";
+
+        if (indexString == null) {
+            this.printMissingArguments(
+                expectedFormatMessage, "Command 'index' expects argument 'index'."
+            );
+            return;
+        }
+        indexString = indexString.strip();
+
+        try {
+            int index = Integer.parseUnsignedInt(indexString);
+            int sizeAfter = this.taskList.getSize() - 1;
+            this.printToStdOut(
+                "Deleted:\n%s\n%d %s remaining,".formatted(
+                    this.taskList.pop(index).toString(), sizeAfter, (sizeAfter > 1) ? "tasks" : "task"
+                )
+            );
+        }
+        catch (IndexOutOfBoundsException exception) {
+            this.printDisallowed(expectedFormatMessage, exception.getMessage());
+        }
+        catch (NumberFormatException exception) {
+            this.printIllegalArguments(
+                expectedFormatMessage,
+                "Command 'delete' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
+            );
+        }
+    }
+
 
     private void printIllegalArguments(String expectedFormatMessage, String errorMessage) {
         this.printToStdOut("EXPECTED FORMAT: %s\nILLEGAL ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage));

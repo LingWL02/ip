@@ -12,7 +12,7 @@ public class TaskList {
     }
 
 
-    public Task mark(Integer index) throws IndexOutOfBoundsException, TaskIsMarkedException {
+    public Task mark(int index) throws IndexOutOfBoundsException, TaskIsMarkedException {
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
@@ -29,7 +29,7 @@ public class TaskList {
     }
 
 
-    public Task unmark(Integer index) throws IndexOutOfBoundsException, TaskIsUnmarkedException {
+    public Task unmark(int index) throws IndexOutOfBoundsException, TaskIsUnmarkedException {
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
@@ -44,6 +44,21 @@ public class TaskList {
         }
         task.unmark();
         return task;
+    }
+
+
+    public Task pop(int index) throws IndexOutOfBoundsException {
+        if (index < 1 || index > this.taskList.size()) {
+            throw new IndexOutOfBoundsException(
+                "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
+            );
+        }
+        return this.taskList.remove(index - 1);
+    }
+
+
+    public int getSize() {
+        return this.taskList.size();
     }
 
 

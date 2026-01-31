@@ -8,4 +8,5 @@ public enum ParserTag {
     TODO,
     DEADLINE,
     EVENT,
+    DELETE
 }
