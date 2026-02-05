@@ -1,42 +1,73 @@
 package app;
 
 import java.time.DateTimeException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Scanner;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.io.IOException;
 
-import app.task.*;
+import app.task.Deadline;
+import app.task.Event;
+import app.task.TaskIsMarkedException;
+import app.task.TaskIsUnmarkedException;
+import app.task.TaskList;
+import app.task.Todo;
 import app.parser.RegexParser;
 import app.parser.ParserTag;
-import app.parser.DuplicatePatternException;
 import utilities.Pair;
 
-
+/**
+ * Main application class for the Duke chatbot.
+ * This class handles the main application loop, user input parsing,
+ * and command execution for task management operations.
+ *
+ * <p>Supported commands include: bye, list, mark, unmark, todo, deadline, event, delete.</p>
+ */
 public class App {
+
+    /** The display name of the chatbot. */
     private final String botName;
+
+    /** The line separator used for formatting console output. */
     private final String lineSeparator;
+
+    /** Flag indicating whether the application is running. */
     private Boolean isAlive = true;
 
+    /** Scanner for reading user input from the console. */
     private final Scanner appScanner = new Scanner(System.in);
-    private final TaskList taskList = new TaskList();
+
+    /** The task list manager for storing and manipulating tasks. */
+    private final TaskList taskList = new TaskList(".\\data\\tasks.txt");
+
+    /** The regex parser for parsing and routing user commands. */
     private final RegexParser<ParserTag> regexParser = new RegexParser<ParserTag>();
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-
+    /**
+     * Constructs a new App instance with the specified bot name and line separator.
+     *
+     * @param botName       The display name of the chatbot.
+     * @param lineSeparator The string used to separate output lines for formatting.
+     */
     public App(String botName, String lineSeparator) {
         this.botName = botName;
         this.lineSeparator = lineSeparator;
     }
 
-
+    /**
+     * Runs the main application loop.
+     * Initializes the task list and parser, displays a greeting,
+     * then continuously reads and processes user commands until 'bye' is entered.
+     */
     public void run() {
         System.out.printf("%s\n\n", this.lineSeparator);
 
         try {
+            this.configureTaskList();
             this.configureParser();
         }
         catch (Exception exception) {
@@ -66,13 +97,36 @@ public class App {
         this.printToStdOut("Bye. Hope to see you again soon!");
     }
 
-
-    private void printToStdOut (String message) {
+    /**
+     * Prints a message to standard output with the line separator.
+     *
+     * @param message The message to print.
+     */
+    private void printToStdOut(String message) {
         System.out.printf("%s\n%s\n\n", message, this.lineSeparator);
     }
 
+    /**
+     * Configures the task list by registering task types and loading existing tasks.
+     * Registers Todo, Deadline, and Event task types for deserialization.
+     *
+     * @throws Exception If task registration or loading fails.
+     */
+    private void configureTaskList() throws Exception {
+        this.taskList.subscribeTaskDeserialization(
+            Arrays.asList(Todo.class, Deadline.class, Event.class)
+        );
+        this.taskList.load();
+    }
 
-    private void configureParser() throws DuplicatePatternException {
+    /**
+     * Configures the regex parser with command patterns.
+     * Registers patterns for all supported commands: bye, list, mark, unmark,
+     * todo, deadline, event, and delete.
+     *
+     * @throws Exception If pattern registration fails due to duplicate patterns.
+     */
+    private void configureParser() throws Exception {
         this.regexParser.addPatternTagMappings(
             Map.ofEntries(
                 Map.entry(Pattern.compile("^\\s*bye\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.BYE),
@@ -81,7 +135,7 @@ public class App {
                 Map.entry(Pattern.compile("^\\s*unmark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.UNMARK),
                 Map.entry(Pattern.compile("^\\s*todo\\b(?:\\s+(?<name>.*))?\\s*$"), ParserTag.TODO),
                 Map.entry(Pattern.compile(
-                """
+                    """
                     ^\\s*deadline\\b
                     (?<byField>\\s+-by\\b
                     (?<by>\\s+
@@ -109,7 +163,11 @@ public class App {
         );
     }
 
-
+    /**
+     * Routes a parsed command result to the appropriate handler method.
+     *
+     * @param parsedResult A pair containing the command tag and the regex matcher with captured groups.
+     */
     private void handleParsedResults(Pair<ParserTag, Matcher> parsedResult) {
         ParserTag tag = parsedResult.getKey();
         Matcher matcher = parsedResult.getValue();
@@ -127,7 +185,12 @@ public class App {
         }
     }
 
-
+    /**
+     * Handles the 'bye' command to exit the application.
+     * Sets the isAlive flag to false if no extraneous arguments are provided.
+     *
+     * @param matcher The regex matcher containing captured groups from the command.
+     */
     private void handleBye(Matcher matcher) {
         String arg = matcher.group("arg");
 
@@ -140,7 +203,12 @@ public class App {
         this.isAlive = false;
     }
 
-
+    /**
+     * Handles the 'list' command to display all tasks.
+     * Prints an error if extraneous arguments are provided.
+     *
+     * @param matcher The regex matcher containing captured groups from the command.
+     */
     private void handleList(Matcher matcher) {
         String arg = matcher.group("arg");
 
@@ -153,7 +221,12 @@ public class App {
         this.printToStdOut("Task List:\n%s".formatted(this.taskList.toString()));
     }
 
-
+    /**
+     * Handles the 'mark' command to mark a task as completed.
+     * Expects a 1-based index argument specifying which task to mark.
+     *
+     * @param matcher The regex matcher containing the index captured group.
+     */
     private void handleMark(Matcher matcher) {
         String indexString = matcher.group("index");
         String expectedFormatMessage = "mark <index>";
@@ -179,9 +252,19 @@ public class App {
                 "Command 'mark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
         }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
-
+    /**
+     * Handles the 'unmark' command to unmark a task (mark as not completed).
+     * Expects a 1-based index argument specifying which task to unmark.
+     *
+     * @param matcher The regex matcher containing the index captured group.
+     */
     private void handleUnmark(Matcher matcher) {
         String indexString = matcher.group("index");
         String expectedFormatMessage = "unmark <index>";
@@ -207,9 +290,19 @@ public class App {
                 "Command 'unmark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
         }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
-
+    /**
+     * Handles the 'todo' command to create a new Todo task.
+     * Expects a name argument for the task description.
+     *
+     * @param matcher The regex matcher containing the name captured group.
+     */
     private void handleTodo(Matcher matcher) {
         String name = matcher.group("name");
         if (name == null) {
@@ -221,11 +314,24 @@ public class App {
         }
         name = name.strip();
         Todo todo = new Todo(name);
-        this.taskList.add(todo);
-        this.printToStdOut("Todo added:\n%s".formatted(todo.toString()));
+        try {
+            this.taskList.add(todo);
+            this.printToStdOut("Todo added:\n%s".formatted(todo.toString()));
+        }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
-
+    /**
+     * Handles the 'deadline' command to create a new Deadline task.
+     * Expects a name and a '-by' flag with date/time in format: YYYY-MM-DD[,HH:MM].
+     * If time is not specified, defaults to 23:59.
+     *
+     * @param matcher The regex matcher containing name, year, month, day, hour, minute captured groups.
+     */
     private void handleDeadline(Matcher matcher) {
         String expectedFormatMessage = "deadline -by <year>-<month>-<day>[,<hour>:<minute>] <name>";
         String byField = matcher.group("byField");
@@ -269,9 +375,21 @@ public class App {
         catch (DateTimeException exception) {
             printIllegalArguments(expectedFormatMessage, exception.getMessage());
         }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
-
+    /**
+     * Handles the 'event' command to create a new Event task.
+     * Expects a name, '-from' flag with start date/time, and '-to' flag with end date/time.
+     * Date/time format: YYYY-MM-DD[,HH:MM]. If start time is not specified, defaults to 00:00.
+     * If end time is not specified, defaults to 23:59.
+     *
+     * @param matcher The regex matcher containing name, from/to date/time captured groups.
+     */
     private void handleEvent(Matcher matcher) {
         String expectedFormatMessage =
             """
@@ -334,9 +452,19 @@ public class App {
         catch (DateTimeException exception) {
             printIllegalArguments(expectedFormatMessage, exception.getMessage());
         }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
-
+    /**
+     * Handles the 'delete' command to remove a task from the list.
+     * Expects a 1-based index argument specifying which task to delete.
+     *
+     * @param matcher The regex matcher containing the index captured group.
+     */
     private void handleDelete(Matcher matcher) {
         String indexString = matcher.group("index");
         String expectedFormatMessage = "delete <index>";
@@ -367,26 +495,69 @@ public class App {
                 "Command 'delete' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
         }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
-
+    /**
+     * Prints an error message for illegal arguments.
+     *
+     * @param expectedFormatMessage The expected command format.
+     * @param errorMessage          The specific error description.
+     */
     private void printIllegalArguments(String expectedFormatMessage, String errorMessage) {
         this.printToStdOut("EXPECTED FORMAT: %s\nILLEGAL ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage));
     }
 
+    /**
+     * Prints an error message for missing arguments.
+     *
+     * @param expectedFormatMessage The expected command format.
+     * @param errorMessage          The specific error description.
+     */
     private void printMissingArguments(String expectedFormatMessage, String errorMessage) {
         this.printToStdOut("EXPECTED FORMAT: %s\nMISSING ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage));
     }
 
+    /**
+     * Prints an error message for disallowed operations.
+     *
+     * @param expectedFormatMessage The expected command format.
+     * @param errorMessage          The specific error description.
+     */
     private void printDisallowed(String expectedFormatMessage, String errorMessage) {
         this.printToStdOut("EXPECTED FORMAT: %s\nDISALLOWED: %s".formatted(expectedFormatMessage, errorMessage));
     }
 
+    /**
+     * Prints an error message for missing command flags.
+     *
+     * @param expectedFormatMessage The expected command format.
+     * @param errorMessage          The specific error description.
+     */
     private void printMissingFlags(String expectedFormatMessage, String errorMessage) {
         this.printToStdOut("EXPECTED FORMAT: %s\nMISSING FLAGS: %s".formatted(expectedFormatMessage, errorMessage));
     }
 
+    /**
+     * Prints an error message for illegal flag values.
+     *
+     * @param expectedFormatMessage The expected command format.
+     * @param errorMessage          The specific error description.
+     */
     private void printIllegalFlags(String expectedFormatMessage, String errorMessage) {
         this.printToStdOut("EXPECTED FORMAT: %s\nILLEGAL FLAGS: %s".formatted(expectedFormatMessage, errorMessage));
+    }
+
+    /**
+     * Prints an internal error message.
+     *
+     * @param errorMessage The error description.
+     */
+    private void printInternalError(String errorMessage) {
+        this.printToStdOut("INTERNAL ERROR: %s".formatted(errorMessage));
     }
 }
