@@ -9,17 +9,17 @@ Todo added:
 __________________________________________________
 
 Deadline added:
-[D] [ ] Submit report (by 2026-12-25T18:00)
+[D] [ ] Submit report (by Dec 25 2026, 18:00)
 __________________________________________________
 
 Event added:
-[E] [ ] Workshop (start: 2026-02-01T09:00, end: 2026-02-01T17:00)
+[E] [ ] Workshop (start: Feb 01 2026, 09:00, end: Feb 01 2026, 17:00)
 __________________________________________________
 
 Task List:
 1. [T] [ ] Buy bread
-2. [D] [ ] Submit report (by 2026-12-25T18:00)
-3. [E] [ ] Workshop (start: 2026-02-01T09:00, end: 2026-02-01T17:00)
+2. [D] [ ] Submit report (by Dec 25 2026, 18:00)
+3. [E] [ ] Workshop (start: Feb 01 2026, 09:00, end: Feb 01 2026, 17:00)
 __________________________________________________
 
 Marked:
@@ -27,7 +27,7 @@ Marked:
 __________________________________________________
 
 Marked:
-[D] [X] Submit report (by 2026-12-25T18:00)
+[D] [X] Submit report (by Dec 25 2026, 18:00)
 __________________________________________________
 
 Unmarked:
@@ -36,18 +36,18 @@ __________________________________________________
 
 Task List:
 1. [T] [ ] Buy bread
-2. [D] [X] Submit report (by 2026-12-25T18:00)
-3. [E] [ ] Workshop (start: 2026-02-01T09:00, end: 2026-02-01T17:00)
+2. [D] [X] Submit report (by Dec 25 2026, 18:00)
+3. [E] [ ] Workshop (start: Feb 01 2026, 09:00, end: Feb 01 2026, 17:00)
 __________________________________________________
 
 Deleted:
-[E] [ ] Workshop (start: 2026-02-01T09:00, end: 2026-02-01T17:00)
+[E] [ ] Workshop (start: Feb 01 2026, 09:00, end: Feb 01 2026, 17:00)
 2 tasks remaining,
 __________________________________________________
 
 Task List:
 1. [T] [ ] Buy bread
-2. [D] [X] Submit report (by 2026-12-25T18:00)
+2. [D] [X] Submit report (by Dec 25 2026, 18:00)
 __________________________________________________
 
 EXPECTED FORMAT: todo <name>
@@ -101,7 +101,7 @@ DISALLOWED: Index 50 is out of bounds of Task List of size 2.
 __________________________________________________
 
 EXPECTED FORMAT: mark <index>
-DISALLOWED: [D] [X] Submit report (by 2026-12-25T18:00) has already been marked.
+DISALLOWED: [D] [X] Submit report (by Dec 25 2026, 18:00) has already been marked.
 __________________________________________________
 
 Bye. Hope to see you again soon!
