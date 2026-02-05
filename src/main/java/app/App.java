@@ -7,7 +7,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Scanner;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import app.task.*;
 import app.parser.RegexParser;
@@ -22,9 +21,8 @@ public class App {
     private Boolean isAlive = true;
 
     private final Scanner appScanner = new Scanner(System.in);
-    private final TaskList taskList = new TaskList();
+    private final TaskList taskList = new TaskList("data/tasks.txt");
     private final RegexParser<ParserTag> regexParser = new RegexParser<ParserTag>();
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
 
     public App(String botName, String lineSeparator) {
@@ -37,6 +35,7 @@ public class App {
         System.out.printf("%s\n\n", this.lineSeparator);
 
         try {
+            this.confgureTaskList();
             this.configureParser();
         }
         catch (Exception exception) {
@@ -71,8 +70,12 @@ public class App {
         System.out.printf("%s\n%s\n\n", message, this.lineSeparator);
     }
 
+    private void confgureTaskList() throws Exception {
+        return;
+    }
 
-    private void configureParser() throws DuplicatePatternException {
+
+    private void configureParser() throws Exception {
         this.regexParser.addPatternTagMappings(
             Map.ofEntries(
                 Map.entry(Pattern.compile("^\\s*bye\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.BYE),
@@ -81,7 +84,7 @@ public class App {
                 Map.entry(Pattern.compile("^\\s*unmark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.UNMARK),
                 Map.entry(Pattern.compile("^\\s*todo\\b(?:\\s+(?<name>.*))?\\s*$"), ParserTag.TODO),
                 Map.entry(Pattern.compile(
-                """
+                    """
                     ^\\s*deadline\\b
                     (?<byField>\\s+-by\\b
                     (?<by>\\s+
