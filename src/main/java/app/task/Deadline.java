@@ -20,7 +20,12 @@ public class Deadline extends Task {
 
     @Override
     public String serialize() {
-        return super.serialize() + delimiter + this.by.toString();
+        return (
+            getTag() + delimiter +
+            this.getName() + delimiter +
+            this.getIsMarked().toString() + delimiter +
+            this.by.toString()
+        );
     }
 
     public static Deadline deserialize(String serializedTask) {
@@ -39,14 +44,14 @@ public class Deadline extends Task {
     }
 
 
-    @Override
-    public String getTag() {
+    public static String getTag() {
         return tag;
     }
 
+
     @Override
     public String toString() {
-        return "%s (by %s)".formatted(super.toString(), this.by);
+        return "[%s] %s (by %s)".formatted(getTag(), super.toString(), this.by);
     }
 
 }

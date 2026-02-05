@@ -16,7 +16,11 @@ public class Todo extends Task {
 
     @Override
     public String serialize() {
-        return super.serialize();
+        return (
+            getTag() + delimiter +
+            this.getName() + delimiter +
+            this.getIsMarked().toString()
+        );
     }
 
 
@@ -35,13 +39,13 @@ public class Todo extends Task {
     }
 
 
-    @Override
-    public String getTag() {
+    public static String getTag() {
         return tag;
     }
 
+
     @Override
     public String toString() {
-        return "%s".formatted(super.toString());
+        return "[%s] %s".formatted(getTag(), super.toString());
     }
 }

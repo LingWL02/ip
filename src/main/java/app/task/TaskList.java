@@ -13,8 +13,7 @@ import java.util.List;
 
 public class TaskList {
     private final File file;
-    private final String tagDelimiter = "||||";
-
+    private final String tagDelimiter = "<DELIMITER>";
     private final List<Task> taskList= new ArrayList<>();
     private final HashMap<String, Class<? extends Task>> deserializationTagTaskMap = new HashMap<>();
 
@@ -23,6 +22,9 @@ public class TaskList {
     }
 
     public void load() throws IOException, ReflectiveOperationException, SecurityException {
+        if (!this.file.getParentFile().exists()) {
+            this.file.getParentFile().mkdirs();
+        }
         if (!this.file.createNewFile()) {
             try (BufferedReader reader = new BufferedReader(new FileReader(this.file))) {
                 String line;
@@ -63,16 +65,17 @@ public class TaskList {
     }
 
 
-    public void add(Task task) throws IOException {
+    public void add(Task task) throws IOException, ReflectiveOperationException, SecurityException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(this.file, true))) {
-            writer.write(task.getTag() + this.tagDelimiter + task.serialize());
+            writer.write((String) task.getClass().getMethod("getTag").invoke(null) + this.tagDelimiter + task.serialize());
             writer.newLine();
         }
         this.taskList.add(task);
     }
 
 
-    public Task mark(int index) throws IndexOutOfBoundsException, TaskIsMarkedException {
+    public Task mark(int index)
+    throws IndexOutOfBoundsException, TaskIsMarkedException, IOException, ReflectiveOperationException, SecurityException {
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
@@ -85,11 +88,18 @@ public class TaskList {
             );
         }
         task.mark();
+        try {
+            this.modifyFile(index - 1, task, false);
+        } catch (IOException exception) {
+            task.unmark();
+            throw exception;
+        }
         return task;
     }
 
 
-    public Task unmark(int index) throws IndexOutOfBoundsException, TaskIsUnmarkedException {
+    public Task unmark(int index)
+    throws IndexOutOfBoundsException, TaskIsUnmarkedException, IOException, ReflectiveOperationException, SecurityException {
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
@@ -103,16 +113,23 @@ public class TaskList {
             );
         }
         task.unmark();
+        try {
+            this.modifyFile(index - 1, task, false);
+        } catch (IOException exception) {
+            task.mark();
+            throw exception;
+        }
         return task;
     }
 
 
-    public Task pop(int index) throws IndexOutOfBoundsException {
+    public Task pop(int index) throws IndexOutOfBoundsException, IOException, ReflectiveOperationException, SecurityException {
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
             );
         }
+        this.modifyFile(index - 1, null, true);  // Whatever I dont care
         return this.taskList.remove(index - 1);
     }
 
@@ -134,8 +151,8 @@ public class TaskList {
     }
 
 
-    private void modifyFile(int index, String newString, boolean delete) throws IOException {
-        File tempFile = File.createTempFile("",".tmp", this.file.getParentFile());
+    private void modifyFile(int index, Task task, boolean delete) throws IOException, ReflectiveOperationException, SecurityException {
+        File tempFile = File.createTempFile("temp",".tmp", this.file.getParentFile());
         try (
             BufferedReader reader = new BufferedReader(new FileReader(this.file));
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))
@@ -147,7 +164,11 @@ public class TaskList {
                     if (delete) {
                         continue;
                     } else {
-                        writer.write(newString);
+                        writer.write(
+                            (String) task.getClass().getMethod("getTag").invoke(null) +
+                            this.tagDelimiter +
+                            task.serialize()
+                        );
                     }
                 } else {
                     writer.write(line);

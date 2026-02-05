@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Scanner;
 import java.time.LocalDateTime;
+import java.io.IOException;
 
 import app.task.Deadline;
 import app.task.Event;
@@ -26,7 +27,7 @@ public class App {
     private Boolean isAlive = true;
 
     private final Scanner appScanner = new Scanner(System.in);
-    private final TaskList taskList = new TaskList("data/tasks.txt");
+    private final TaskList taskList = new TaskList(".\\data\\tasks.txt");
     private final RegexParser<ParserTag> regexParser = new RegexParser<ParserTag>();
 
 
@@ -40,7 +41,7 @@ public class App {
         System.out.printf("%s\n\n", this.lineSeparator);
 
         try {
-            this.confgureTaskList();
+            this.configureTaskList();
             this.configureParser();
         }
         catch (Exception exception) {
@@ -76,12 +77,11 @@ public class App {
     }
 
 
-    private void confgureTaskList() throws Exception {
+    private void configureTaskList() throws Exception {
         this.taskList.subscribeTaskDeserialization(
             Arrays.asList(Todo.class, Deadline.class, Event.class)
         );
         this.taskList.load();
-        return;
     }
 
 
@@ -192,6 +192,11 @@ public class App {
                 "Command 'mark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
         }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
 
@@ -220,6 +225,11 @@ public class App {
                 "Command 'unmark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
         }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
 
@@ -234,8 +244,15 @@ public class App {
         }
         name = name.strip();
         Todo todo = new Todo(name);
-        this.taskList.add(todo);
-        this.printToStdOut("Todo added:\n%s".formatted(todo.toString()));
+        try {
+            this.taskList.add(todo);
+            this.printToStdOut("Todo added:\n%s".formatted(todo.toString()));
+        }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
 
@@ -281,6 +298,11 @@ public class App {
         }
         catch (DateTimeException exception) {
             printIllegalArguments(expectedFormatMessage, exception.getMessage());
+        }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
         }
     }
 
@@ -347,6 +369,11 @@ public class App {
         catch (DateTimeException exception) {
             printIllegalArguments(expectedFormatMessage, exception.getMessage());
         }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
 
@@ -380,6 +407,11 @@ public class App {
                 "Command 'delete' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
         }
+        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            this.printInternalError(
+                "An internal error occured: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
 
@@ -401,5 +433,9 @@ public class App {
 
     private void printIllegalFlags(String expectedFormatMessage, String errorMessage) {
         this.printToStdOut("EXPECTED FORMAT: %s\nILLEGAL FLAGS: %s".formatted(expectedFormatMessage, errorMessage));
+    }
+
+    private void printInternalError(String errorMessage) {
+        this.printToStdOut("INTERNAL ERROR: %s".formatted(errorMessage));
     }
 }

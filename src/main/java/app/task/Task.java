@@ -18,39 +18,39 @@ public abstract class Task {
 
     @Override
     public String toString() {
-        return "[%s] [%s] %s".formatted(getTag(), (this.isMarked ? "X" : " "), this.name);
+        return "[%s] %s".formatted((this.isMarked ? "X" : " "), this.name);
     }
 
 
-    public String serialize() {
-        return (
-            this.getTag() + delimiter +
-            this.name + delimiter +
-            this.isMarked.toString()
-        );
-    };
+    public abstract String serialize();
 
 
     public static Task deserialize(String serializedTask) {
         throw new UnsupportedOperationException("Cannot call static method deserialize on Task class.");
-    };
+    }
 
 
-    public abstract String getTag();
+    public static String getTag() {
+        throw new UnsupportedOperationException("Cannot call static method getTag on Task class.");
+    }
+
 
     public void mark() {
         this.isMarked = true;
     }
 
+
     public void unmark() {
         this.isMarked = false;
     }
+
 
     public String getName() {
         return name;
     }
 
-    public boolean getIsMarked() {
+
+    public Boolean getIsMarked() {
         return this.isMarked;
     }
 }

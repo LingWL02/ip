@@ -22,7 +22,12 @@ public class Event extends Task {
 
     @Override
     public String serialize() {
-        return super.serialize() + delimiter + this.start.toString() + delimiter + this.end.toString();
+        return (
+            getTag() + delimiter +
+            this.getName() + delimiter +
+            this.getIsMarked().toString() + delimiter +
+            this.start.toString() + delimiter +
+            this.end.toString());
     }
 
 
@@ -43,15 +48,15 @@ public class Event extends Task {
     }
 
 
-    @Override
-    public String getTag() {
+    public static String getTag() {
         return tag;
     }
 
+
     @Override
     public String toString() {
-        return "%s (start: %s, end: %s)".formatted(
-            super.toString(), this.start.toString(), this.end.toString()
+        return "[%s] %s (start: %s, end: %s)".formatted(
+            getTag(), super.toString(), this.start.toString(), this.end.toString()
         );
     }
 }
