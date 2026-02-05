@@ -1,6 +1,7 @@
 package app;
 
 import java.time.DateTimeException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -8,10 +9,14 @@ import java.util.regex.Pattern;
 import java.util.Scanner;
 import java.time.LocalDateTime;
 
-import app.task.*;
+import app.task.Deadline;
+import app.task.Event;
+import app.task.TaskIsMarkedException;
+import app.task.TaskIsUnmarkedException;
+import app.task.TaskList;
+import app.task.Todo;
 import app.parser.RegexParser;
 import app.parser.ParserTag;
-import app.parser.DuplicatePatternException;
 import utilities.Pair;
 
 
@@ -70,7 +75,12 @@ public class App {
         System.out.printf("%s\n%s\n\n", message, this.lineSeparator);
     }
 
+
     private void confgureTaskList() throws Exception {
+        this.taskList.subscribeTaskDeserialization(
+            Arrays.asList(Todo.class, Deadline.class, Event.class)
+        );
+        this.taskList.load();
         return;
     }
 
