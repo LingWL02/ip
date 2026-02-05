@@ -1,3 +1,0 @@
-T<DELIMITER>T,gay,true
-T<DELIMITER>T,hello world,false
-T<DELIMITER>T,bye world,true
