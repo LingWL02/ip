@@ -365,10 +365,11 @@ public class App {
         int day = Integer.parseUnsignedInt(dayString);
         int hour = (hourString == null) ? 23 : Integer.parseUnsignedInt(hourString);
         int minute = (minuteString == null) ? 59 : Integer.parseUnsignedInt(minuteString);
+        boolean includeByTime = (hourString != null && minuteString != null);
 
         try {
             LocalDateTime dateTime = LocalDateTime.of(year, month, day, hour, minute);
-            Deadline deadline = new Deadline(name, dateTime);
+            Deadline deadline = new Deadline(name, dateTime, includeByTime);
             this.taskList.add(deadline);
             this.printToStdOut("Deadline added:\n%s".formatted(deadline.toString()));
         }
@@ -440,12 +441,14 @@ public class App {
         String toHourStr = matcher.group("toHour");
         String toMinStr = matcher.group("toMinute");
         int toHour = (toHourStr == null) ? 23 : Integer.parseUnsignedInt(toHourStr);
+        boolean includeStartTime = (fromHourStr != null && fromMinStr != null);
         int toMin = (toMinStr == null) ? 59 : Integer.parseUnsignedInt(toMinStr);
+        boolean includeEndTime = (toHourStr != null && toMinStr != null);
 
         try {
             LocalDateTime startDateTime = LocalDateTime.of(fromYear, fromMonth, fromDay, fromHour, fromMin);
             LocalDateTime endDateTime = LocalDateTime.of(toYear, toMonth, toDay, toHour, toMin);
-            Event event = new Event(name.strip(), startDateTime, endDateTime);
+            Event event = new Event(name.strip(), startDateTime, includeStartTime, endDateTime, includeEndTime);
             this.taskList.add(event);
             this.printToStdOut("Event added:\n%s".formatted(event.toString()));
         }

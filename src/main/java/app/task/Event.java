@@ -1,12 +1,13 @@
 package app.task;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Represents an Event task in the Duke chatbot application.
  * An Event is a task with a name, a start date/time, and an end date/time.
  *
- * <p>Serialization format: "E,name,isMarked,startDateTime,endDateTime"</p>
+ * <p>Serialization format: "E,name,isMarked,start,includeStartTime,end,includeEndTime"</p>
  */
 public class Event extends Task {
 
@@ -15,9 +16,11 @@ public class Event extends Task {
 
     /** The start date and time of the event. */
     private LocalDateTime start;
+    private Boolean includeStartTime = true;
 
     /** The end date and time of the event. */
     private LocalDateTime end;
+    private Boolean includeEndTime = true;
 
     /**
      * Constructs a new Event task with the specified name, start time, and end time.
@@ -33,25 +36,44 @@ public class Event extends Task {
         this.end = end;
     }
 
+    public Event(
+        String name, LocalDateTime start, Boolean includeStartTime,
+        LocalDateTime end, Boolean includeEndTime
+    ) {
+        super(name);
+        this.start = start;
+        this.includeStartTime = includeStartTime;
+        this.end = end;
+        this.includeEndTime = includeEndTime;
+    }
+
     /**
      * Private constructor for deserialization purposes.
      * Creates an Event with the specified name, marked status, start time, and end time.
      *
-     * @param name           The name or description of the event.
-     * @param isMarkedString String representation of the marked status ("true" or "false").
-     * @param startString    String representation of the start date/time in ISO-8601 format.
-     * @param endString      String representation of the end date/time in ISO-8601 format.
+     * @param name                   The name or description of the event.
+     * @param isMarkedString         String representation of the marked status ("true" or "false").
+     * @param startString            String representation of the start date/time in ISO-8601 format.
+     * @param includeStartTimeString String representation of whether to include start time ("true" or "false").
+     * @param endString              String representation of the end date/time in ISO-8601 format.
+     * @param includeEndTimeString   String representation of whether to include end time ("true" or "false").
      */
-    private Event(String name, String isMarkedString, String startString, String endString) {
+    private Event(
+        String name, String isMarkedString,
+        String startString, String includeStartTimeString,
+        String endString, String includeEndTimeString
+    ) {
         super(name, isMarkedString);
         this.start = LocalDateTime.parse(startString);
+        this.includeStartTime = Boolean.parseBoolean(includeStartTimeString);
         this.end = LocalDateTime.parse(endString);
+        this.includeEndTime = Boolean.parseBoolean(includeEndTimeString);
     }
 
     /**
      * Serializes this Event task to a string format for persistent storage.
      *
-     * @return A serialized string in the format "E,name,isMarked,startDateTime,endDateTime".
+     * @return A serialized string in the format "E,name,isMarked,start,includeStartTime,end,includeEndTime".
      */
     @Override
     public String serialize() {
@@ -60,7 +82,10 @@ public class Event extends Task {
             this.getName() + delimiter +
             this.getIsMarked().toString() + delimiter +
             this.start.toString() + delimiter +
-            this.end.toString());
+            this.includeStartTime.toString() + delimiter +
+            this.end.toString() + delimiter +
+            this.includeEndTime.toString()
+        );
     }
 
     /**
@@ -73,7 +98,7 @@ public class Event extends Task {
      */
     public static Task deserialize(String serializedTask) {
         String[] serializedParts = serializedTask.split(delimiter);
-        if (serializedParts.length != 5) {
+        if (serializedParts.length != 7) {
             throw new RuntimeException(); // TODO
         }
         if (!serializedParts[0].equals(tag)) {
@@ -83,7 +108,9 @@ public class Event extends Task {
             serializedParts[1],
             serializedParts[2],
             serializedParts[3],
-            serializedParts[4]
+            serializedParts[4],
+            serializedParts[5],
+            serializedParts[6]
         );
     }
 
@@ -105,7 +132,31 @@ public class Event extends Task {
     @Override
     public String toString() {
         return "[%s] %s (start: %s, end: %s)".formatted(
-            getTag(), super.toString(), this.start.toString(), this.end.toString()
+            getTag(), super.toString(), this.getStartString(), this.getEndString()
         );
+    }
+
+
+    public String getStartString() {
+        if (includeStartTime) {
+            return this.start.format(DateTimeFormatter.ofPattern("MMM dd yyyy, HH:mm"));
+        } else {
+            return this.start.format(DateTimeFormatter.ofPattern("MMM dd yyyy"));
+        }
+    }
+
+    /**
+     * Returns the end date/time as a formatted string.
+     * If includeEndTime is true, returns "MMM dd yyyy, HH:mm" format.
+     * Otherwise, returns "MMM dd yyyy" format.
+     *
+     * @return A formatted string representation of the end date/time.
+     */
+    public String getEndString() {
+        if (includeEndTime) {
+            return this.end.format(DateTimeFormatter.ofPattern("MMM dd yyyy, HH:mm"));
+        } else {
+            return this.end.format(DateTimeFormatter.ofPattern("MMM dd yyyy"));
+        }
     }
 }
