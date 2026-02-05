@@ -17,6 +17,7 @@ import app.task.TaskIsUnmarkedException;
 import app.task.TaskList;
 import app.task.Todo;
 import app.parser.RegexParser;
+import app.storage.TaskStorage;
 import app.parser.ParserTag;
 import utilities.Pair;
 
@@ -42,10 +43,12 @@ public class App {
     private final Scanner appScanner = new Scanner(System.in);
 
     /** The task list manager for storing and manipulating tasks. */
-    private final TaskList taskList = new TaskList(".\\data\\tasks.txt");
+    private final TaskList taskList = new TaskList();
 
     /** The regex parser for parsing and routing user commands. */
     private final RegexParser<ParserTag> regexParser = new RegexParser<ParserTag>();
+
+    private final TaskStorage taskStorage = new TaskStorage(".\\data\\tasks.txt");
 
     /**
      * Constructs a new App instance with the specified bot name and line separator.
@@ -67,6 +70,7 @@ public class App {
         System.out.printf("%s\n\n", this.lineSeparator);
 
         try {
+            this.configureTaskStorage();
             this.configureTaskList();
             this.configureParser();
         }
@@ -106,6 +110,12 @@ public class App {
         System.out.printf("%s\n%s\n\n", message, this.lineSeparator);
     }
 
+    private void configureTaskStorage() throws Exception {
+        this.taskStorage.subscribeTaskDeserialization(
+            Arrays.asList(Todo.class, Deadline.class, Event.class)
+        );
+    }
+
     /**
      * Configures the task list by registering task types and loading existing tasks.
      * Registers Todo, Deadline, and Event task types for deserialization.
@@ -113,10 +123,7 @@ public class App {
      * @throws Exception If task registration or loading fails.
      */
     private void configureTaskList() throws Exception {
-        this.taskList.subscribeTaskDeserialization(
-            Arrays.asList(Todo.class, Deadline.class, Event.class)
-        );
-        this.taskList.load();
+        this.taskList.mountStorage(this.taskStorage);
     }
 
     /**

@@ -13,13 +13,13 @@ Deadline added:
 __________________________________________________
 
 Event added:
-[E] [ ] Workshop (start: Feb 01 2026, 09:00, end: Feb 01 2026, 17:00)
+[E] [ ] Workshop (start: Feb 01 2026, 09:00 | end: Feb 01 2026, 17:00)
 __________________________________________________
 
 Task List:
 1. [T] [ ] Buy bread
 2. [D] [ ] Submit report (by Dec 25 2026, 18:00)
-3. [E] [ ] Workshop (start: Feb 01 2026, 09:00, end: Feb 01 2026, 17:00)
+3. [E] [ ] Workshop (start: Feb 01 2026, 09:00 | end: Feb 01 2026, 17:00)
 __________________________________________________
 
 Marked:
@@ -37,11 +37,11 @@ __________________________________________________
 Task List:
 1. [T] [ ] Buy bread
 2. [D] [X] Submit report (by Dec 25 2026, 18:00)
-3. [E] [ ] Workshop (start: Feb 01 2026, 09:00, end: Feb 01 2026, 17:00)
+3. [E] [ ] Workshop (start: Feb 01 2026, 09:00 | end: Feb 01 2026, 17:00)
 __________________________________________________
 
 Deleted:
-[E] [ ] Workshop (start: Feb 01 2026, 09:00, end: Feb 01 2026, 17:00)
+[E] [ ] Workshop (start: Feb 01 2026, 09:00 | end: Feb 01 2026, 17:00)
 2 tasks remaining,
 __________________________________________________
 
