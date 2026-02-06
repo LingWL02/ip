@@ -95,6 +95,7 @@ public class App {
         this.printToStdOut("Hello! I'm %s!\nWhat can I do for you?".formatted(this.botName));
 
         while (this.isAlive) {
+            if (!this.appScanner.hasNextLine()) return;
             String userInput = this.appScanner.nextLine();
 
             List<Pair<ParserTag, Matcher>> parsedResults = this.regexParser.parse(userInput);
@@ -526,7 +527,7 @@ public class App {
         StringBuilder bobTheBuilder = new StringBuilder("Here are the matching tasks:\n");
         for (int i = 0; i < foundTasks.size(); i++) {
             Pair<Integer, Task> pair = foundTasks.get(i);
-            bobTheBuilder.append("%d. %s".formatted(pair.getKey(), pair.getValue().toString()));
+            bobTheBuilder.append("%d. %s\n".formatted(pair.getKey(), pair.getValue().toString()));
         }
         this.printToStdOut(bobTheBuilder.toString());
     }
