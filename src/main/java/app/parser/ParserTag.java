@@ -30,5 +30,7 @@ public enum ParserTag {
     /** Command to delete a task. */
     DELETE,
 
-    FIND
+    FIND,
+
+    CHEER
 }
