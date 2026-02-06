@@ -10,6 +10,7 @@ import java.util.Scanner;
 import java.time.LocalDateTime;
 import java.io.IOException;
 
+import app.task.Task;
 import app.task.Deadline;
 import app.task.Event;
 import app.task.TaskIsMarkedException;
@@ -30,22 +31,34 @@ import utilities.Pair;
  */
 public class App {
 
-    /** The display name of the chatbot. */
+    /**
+     * The display name of the chatbot.
+     */
     private final String botName;
 
-    /** The line separator used for formatting console output. */
+    /**
+     * The line separator used for formatting console output.
+     */
     private final String lineSeparator;
 
-    /** Flag indicating whether the application is running. */
+    /**
+     * Flag indicating whether the application is running.
+     */
     private Boolean isAlive = true;
 
-    /** Scanner for reading user input from the console. */
+    /**
+     * Scanner for reading user input from the console.
+     */
     private final Scanner appScanner = new Scanner(System.in);
 
-    /** The task list manager for storing and manipulating tasks. */
+    /**
+     * The task list manager for storing and manipulating tasks.
+     */
     private final TaskList taskList = new TaskList();
 
-    /** The regex parser for parsing and routing user commands. */
+    /**
+     * The regex parser for parsing and routing user commands.
+     */
     private final RegexParser<ParserTag> regexParser = new RegexParser<ParserTag>();
 
     private final TaskStorage taskStorage = new TaskStorage(".\\data\\tasks.txt");
@@ -73,8 +86,7 @@ public class App {
             this.configureTaskStorage();
             this.configureTaskList();
             this.configureParser();
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             this.printToStdOut(
                     "EXCEPTION: %s\nTerminating app...".formatted(exception.toString())
             );
@@ -82,7 +94,7 @@ public class App {
         }
         this.printToStdOut("Hello! I'm %s!\nWhat can I do for you?".formatted(this.botName));
 
-        while(this.isAlive) {
+        while (this.isAlive) {
             String userInput = this.appScanner.nextLine();
 
             List<Pair<ParserTag, Matcher>> parsedResults = this.regexParser.parse(userInput);
@@ -90,8 +102,7 @@ public class App {
             if (parsedResults.isEmpty()) {
                 this.printToStdOut("UNRECOGNIZED COMMAND: Please try again.");
                 continue;
-            }
-            else if (parsedResults.size() > 1) {
+            } else if (parsedResults.size() > 1) {
                 this.printToStdOut("ERROR: User Input matched multiple entries.\nTerminating app...");
                 return;
             }
@@ -112,7 +123,7 @@ public class App {
 
     private void configureTaskStorage() throws Exception {
         this.taskStorage.subscribeTaskDeserialization(
-            Arrays.asList(Todo.class, Deadline.class, Event.class)
+                Arrays.asList(Todo.class, Deadline.class, Event.class)
         );
     }
 
@@ -135,38 +146,39 @@ public class App {
      */
     private void configureParser() throws Exception {
         this.regexParser.addPatternTagMappings(
-            Map.ofEntries(
-                Map.entry(Pattern.compile("^\\s*bye\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.BYE),
-                Map.entry(Pattern.compile("^\\s*list\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.LIST),
-                Map.entry(Pattern.compile("^\\s*mark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.MARK),
-                Map.entry(Pattern.compile("^\\s*unmark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.UNMARK),
-                Map.entry(Pattern.compile("^\\s*todo\\b(?:\\s+(?<name>.*))?\\s*$"), ParserTag.TODO),
-                Map.entry(Pattern.compile(
-                    """
-                    ^\\s*deadline\\b
-                    (?<byField>\\s+-by\\b
-                    (?<by>\\s+
-                    (?<year>\\d{4})-(?<month>\\d{1,2})-(?<day>\\d{1,2})
-                    (?:\\s*,\\s*(?<hour>\\d{1,2}):(?<minute>\\d{1,2}))?)?)?
-                    (?:\\s+(?<name>.*))?\\s*$
-                    """, Pattern.COMMENTS), ParserTag.DEADLINE
-                ),
-                Map.entry(Pattern.compile(
-                    """
-                    ^\\s*event\\b
-                    (?<fromField>\\s+-from\\b
-                    (?<from>\\s+
-                    (?<fromYear>\\d{4})-(?<fromMonth>\\d{1,2})-(?<fromDay>\\d{1,2})
-                    (?:\\s*,\\s*(?<fromHour>\\d{1,2}):(?<fromMinute>\\d{1,2}))?)?)?
-                    (?<toField>\\s+-to\\b
-                    (?<to>\\s+
-                    (?<toYear>\\d{4})-(?<toMonth>\\d{1,2})-(?<toDay>\\d{1,2})
-                    (?:\\s*,\\s*(?<toHour>\\d{1,2}):(?<toMinute>\\d{1,2}))?)?)?
-                    (?:\\s+(?<name>.*))?\\s*$
-                    """, Pattern.COMMENTS), ParserTag.EVENT
-                ),
-                Map.entry(Pattern.compile("^\\s*delete\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.DELETE)
-            )
+                Map.ofEntries(
+                        Map.entry(Pattern.compile("^\\s*bye\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.BYE),
+                        Map.entry(Pattern.compile("^\\s*list\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.LIST),
+                        Map.entry(Pattern.compile("^\\s*mark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.MARK),
+                        Map.entry(Pattern.compile("^\\s*unmark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.UNMARK),
+                        Map.entry(Pattern.compile("^\\s*todo\\b(?:\\s+(?<name>.*))?\\s*$"), ParserTag.TODO),
+                        Map.entry(Pattern.compile(
+                                """
+                                        ^\\s*deadline\\b
+                                        (?<byField>\\s+-by\\b
+                                        (?<by>\\s+
+                                        (?<year>\\d{4})-(?<month>\\d{1,2})-(?<day>\\d{1,2})
+                                        (?:\\s*,\\s*(?<hour>\\d{1,2}):(?<minute>\\d{1,2}))?)?)?
+                                        (?:\\s+(?<name>.*))?\\s*$
+                                        """, Pattern.COMMENTS), ParserTag.DEADLINE
+                        ),
+                        Map.entry(Pattern.compile(
+                                """
+                                        ^\\s*event\\b
+                                        (?<fromField>\\s+-from\\b
+                                        (?<from>\\s+
+                                        (?<fromYear>\\d{4})-(?<fromMonth>\\d{1,2})-(?<fromDay>\\d{1,2})
+                                        (?:\\s*,\\s*(?<fromHour>\\d{1,2}):(?<fromMinute>\\d{1,2}))?)?)?
+                                        (?<toField>\\s+-to\\b
+                                        (?<to>\\s+
+                                        (?<toYear>\\d{4})-(?<toMonth>\\d{1,2})-(?<toDay>\\d{1,2})
+                                        (?:\\s*,\\s*(?<toHour>\\d{1,2}):(?<toMinute>\\d{1,2}))?)?)?
+                                        (?:\\s+(?<name>.*))?\\s*$
+                                        """, Pattern.COMMENTS), ParserTag.EVENT
+                        ),
+                        Map.entry(Pattern.compile("^\\s*delete\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.DELETE),
+                        Map.entry(Pattern.compile("^\\s*find\\b(?:\\s+(?<keyword>.*))?\\s*$"), ParserTag.FIND)
+                )
         );
     }
 
@@ -188,6 +200,7 @@ public class App {
             case DEADLINE -> this.handleDeadline(matcher);
             case EVENT -> this.handleEvent(matcher);
             case DELETE -> this.handleDelete(matcher);
+            case FIND -> this.handleFind(matcher);
             default -> this.printToStdOut("TODO: Tag not implemented.");
         }
     }
@@ -203,8 +216,8 @@ public class App {
 
         if (arg != null) {
             this.printIllegalArguments(
-                "bye",
-                "Command 'bye' does not accept any arguments.");
+                    "bye",
+                    "Command 'bye' does not accept any arguments.");
             return;
         }
         this.isAlive = false;
@@ -221,8 +234,8 @@ public class App {
 
         if (arg != null) {
             this.printIllegalArguments(
-                "list",
-                "Command 'list' does not accept any arguments.");
+                    "list",
+                    "Command 'list' does not accept any arguments.");
             return;
         }
         this.printToStdOut("Task List:\n%s".formatted(this.taskList.toString()));
@@ -240,7 +253,7 @@ public class App {
 
         if (indexString == null) {
             this.printMissingArguments(
-                expectedFormatMessage, "Command 'mark' expects argument 'index'."
+                    expectedFormatMessage, "Command 'mark' expects argument 'index'."
             );
             return;
         }
@@ -249,19 +262,16 @@ public class App {
         try {
             Integer index = Integer.parseUnsignedInt(indexString);
             this.printToStdOut("Marked:\n%s".formatted(this.taskList.mark(index).toString()));
-        }
-        catch (IndexOutOfBoundsException | TaskIsMarkedException exception) {
+        } catch (IndexOutOfBoundsException | TaskIsMarkedException exception) {
             this.printDisallowed(expectedFormatMessage, exception.getMessage());
-        }
-        catch (NumberFormatException exception) {
+        } catch (NumberFormatException exception) {
             this.printIllegalArguments(
-                expectedFormatMessage,
-                "Command 'mark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
+                    expectedFormatMessage,
+                    "Command 'mark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
-        }
-        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+        } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             this.printInternalError(
-                "An internal error occured: %s".formatted(exception.getMessage())
+                    "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
     }
@@ -278,7 +288,7 @@ public class App {
 
         if (indexString == null) {
             this.printMissingArguments(
-                expectedFormatMessage, "Command 'unmark' expects argument 'index'."
+                    expectedFormatMessage, "Command 'unmark' expects argument 'index'."
             );
             return;
         }
@@ -287,19 +297,16 @@ public class App {
         try {
             Integer index = Integer.parseUnsignedInt(indexString);
             this.printToStdOut("Unmarked:\n%s".formatted(this.taskList.unmark(index).toString()));
-        }
-        catch (IndexOutOfBoundsException | TaskIsUnmarkedException exception) {
+        } catch (IndexOutOfBoundsException | TaskIsUnmarkedException exception) {
             this.printDisallowed(expectedFormatMessage, exception.getMessage());
-        }
-        catch (NumberFormatException exception) {
+        } catch (NumberFormatException exception) {
             this.printIllegalArguments(
-                expectedFormatMessage,
-                "Command 'unmark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
+                    expectedFormatMessage,
+                    "Command 'unmark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
-        }
-        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+        } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             this.printInternalError(
-                "An internal error occured: %s".formatted(exception.getMessage())
+                    "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
     }
@@ -314,8 +321,8 @@ public class App {
         String name = matcher.group("name");
         if (name == null) {
             this.printMissingArguments(
-                "todo <name>",
-                "Command 'todo' expects argument 'name'."
+                    "todo <name>",
+                    "Command 'todo' expects argument 'name'."
             );
             return;
         }
@@ -324,10 +331,9 @@ public class App {
         try {
             this.taskList.add(todo);
             this.printToStdOut("Todo added:\n%s".formatted(todo.toString()));
-        }
-        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+        } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             this.printInternalError(
-                "An internal error occured: %s".formatted(exception.getMessage())
+                    "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
     }
@@ -352,11 +358,11 @@ public class App {
         }
         if (by == null) {
             printIllegalFlags(
-                expectedFormatMessage,
-                "Command 'deadline' flag '-by' expects date and time in the specified format."
+                    expectedFormatMessage,
+                    "Command 'deadline' flag '-by' expects date and time in the specified format."
             );
             return;
-            }
+        }
         if (name == null) {
             printMissingArguments(expectedFormatMessage, "Command 'deadline' expects argument 'name'");
             return;
@@ -379,13 +385,11 @@ public class App {
             Deadline deadline = new Deadline(name, dateTime, includeByTime);
             this.taskList.add(deadline);
             this.printToStdOut("Deadline added:\n%s".formatted(deadline.toString()));
-        }
-        catch (DateTimeException exception) {
+        } catch (DateTimeException exception) {
             printIllegalArguments(expectedFormatMessage, exception.getMessage());
-        }
-        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+        } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             this.printInternalError(
-                "An internal error occured: %s".formatted(exception.getMessage())
+                    "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
     }
@@ -400,9 +404,9 @@ public class App {
      */
     private void handleEvent(Matcher matcher) {
         String expectedFormatMessage =
-            """
-            event -from <year>-<month>-<day>[,<hour>:<minute>] -to <year>-<month>-<day>[,<hour>:<minute>] <name>
-            """;
+                """
+                        event -from <year>-<month>-<day>[,<hour>:<minute>] -to <year>-<month>-<day>[,<hour>:<minute>] <name>
+                        """;
 
         String fromField = matcher.group("fromField");
         String from = matcher.group("from");
@@ -458,13 +462,11 @@ public class App {
             Event event = new Event(name.strip(), startDateTime, includeStartTime, endDateTime, includeEndTime);
             this.taskList.add(event);
             this.printToStdOut("Event added:\n%s".formatted(event.toString()));
-        }
-        catch (DateTimeException exception) {
+        } catch (DateTimeException exception) {
             printIllegalArguments(expectedFormatMessage, exception.getMessage());
-        }
-        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+        } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             this.printInternalError(
-                "An internal error occured: %s".formatted(exception.getMessage())
+                    "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
     }
@@ -481,7 +483,7 @@ public class App {
 
         if (indexString == null) {
             this.printMissingArguments(
-                expectedFormatMessage, "Command 'index' expects argument 'index'."
+                    expectedFormatMessage, "Command 'index' expects argument 'index'."
             );
             return;
         }
@@ -491,26 +493,44 @@ public class App {
             int index = Integer.parseUnsignedInt(indexString);
             int sizeAfter = this.taskList.getSize() - 1;
             this.printToStdOut(
-                "Deleted:\n%s\n%d %s remaining,".formatted(
-                    this.taskList.pop(index).toString(), sizeAfter, (sizeAfter > 1) ? "tasks" : "task"
-                )
+                    "Deleted:\n%s\n%d %s remaining,".formatted(
+                            this.taskList.pop(index).toString(), sizeAfter, (sizeAfter > 1) ? "tasks" : "task"
+                    )
             );
-        }
-        catch (IndexOutOfBoundsException exception) {
+        } catch (IndexOutOfBoundsException exception) {
             this.printDisallowed(expectedFormatMessage, exception.getMessage());
-        }
-        catch (NumberFormatException exception) {
+        } catch (NumberFormatException exception) {
             this.printIllegalArguments(
-                expectedFormatMessage,
-                "Command 'delete' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
+                    expectedFormatMessage,
+                    "Command 'delete' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
-        }
-        catch (IOException | ReflectiveOperationException | SecurityException exception) {
+        } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             this.printInternalError(
-                "An internal error occured: %s".formatted(exception.getMessage())
+                    "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
     }
+
+    private void handleFind(Matcher matcher) {
+        String keyword = matcher.group("keyword");
+        String expectedFormatMessage = "find <keyword>";
+
+        if (keyword == null) {
+            this.printMissingArguments(
+                    expectedFormatMessage, "Command 'find' expects argument 'keyword'."
+            );
+            return;
+        }
+        keyword = keyword.strip();
+        List<Pair<Integer, Task>> foundTasks = this.taskList.findTasks(keyword);
+        StringBuilder bobTheBuilder = new StringBuilder("Here are the matching tasks:\n");
+        for (int i = 0; i < foundTasks.size(); i++) {
+            Pair<Integer, Task> pair = foundTasks.get(i);
+            bobTheBuilder.append("%d. %s".formatted(pair.getKey(), pair.getValue().toString()));
+        }
+        this.printToStdOut(bobTheBuilder.toString());
+    }
+
 
     /**
      * Prints an error message for illegal arguments.

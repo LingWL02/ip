@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import app.storage.TaskStorage;
+import utilities.Pair;
 
 /**
  * Manages a list of tasks with persistent storage capabilities.
@@ -136,5 +137,16 @@ public class TaskList {
             bobTheBuilder.append("%s%d. %s".formatted((i > 0) ? "\n" : "", i + 1, task.toString()));
         }
         return bobTheBuilder.toString();
+    }
+
+    public List<Pair<Integer, Task>> findTasks(String keyword) {
+        List<Pair<Integer, Task>> foundTasks = new ArrayList<>();
+        for (int i = 0; i < this.taskList.size(); i++) {
+            Task task = taskList.get(i);
+            if (task.getName().contains(keyword)) {
+                foundTasks.add(new Pair<>(i + 1, task));
+            }
+        }
+        return foundTasks;
     }
 }

@@ -28,5 +28,7 @@ public enum ParserTag {
     EVENT,
 
     /** Command to delete a task. */
-    DELETE
+    DELETE,
+
+    FIND
 }
