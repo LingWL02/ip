@@ -10,6 +10,7 @@ import java.util.Scanner;
 import java.time.LocalDateTime;
 import java.io.IOException;
 
+import app.cheerleader.Cheerleader;
 import app.task.Task;
 import app.task.Deadline;
 import app.task.Event;
@@ -63,6 +64,8 @@ public class App {
 
     private final TaskStorage taskStorage = new TaskStorage(".\\data\\tasks.txt");
 
+    private final Cheerleader cheerleader = new Cheerleader(".\\data\\cheer.txt");
+
     /**
      * Constructs a new App instance with the specified bot name and line separator.
      *
@@ -86,6 +89,7 @@ public class App {
             this.configureTaskStorage();
             this.configureTaskList();
             this.configureParser();
+            this.configureCheerLeader();
         } catch (Exception exception) {
             this.printToStdOut(
                     "EXCEPTION: %s\nTerminating app...".formatted(exception.toString())
@@ -137,6 +141,11 @@ public class App {
         this.taskList.mountStorage(this.taskStorage);
     }
 
+
+    private void configureCheerLeader() throws Exception {
+        this.cheerleader.load();
+    }
+
     /**
      * Configures the regex parser with command patterns.
      * Registers patterns for all supported commands: bye, list, mark, unmark,
@@ -177,7 +186,8 @@ public class App {
                                         """, Pattern.COMMENTS), ParserTag.EVENT
                         ),
                         Map.entry(Pattern.compile("^\\s*delete\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.DELETE),
-                        Map.entry(Pattern.compile("^\\s*find\\b(?:\\s+(?<keyword>.*))?\\s*$"), ParserTag.FIND)
+                        Map.entry(Pattern.compile("^\\s*find\\b(?:\\s+(?<keyword>.*))?\\s*$"), ParserTag.FIND),
+                        Map.entry(Pattern.compile("^\\s*cheer\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.CHEER)
                 )
         );
     }
@@ -201,6 +211,7 @@ public class App {
             case EVENT -> this.handleEvent(matcher);
             case DELETE -> this.handleDelete(matcher);
             case FIND -> this.handleFind(matcher);
+            case CHEER -> this.handleCheer(matcher);
             default -> this.printToStdOut("TODO: Tag not implemented.");
         }
     }
@@ -529,6 +540,25 @@ public class App {
             bobTheBuilder.append("%d. %s".formatted(pair.getKey(), pair.getValue().toString()));
         }
         this.printToStdOut(bobTheBuilder.toString());
+    }
+
+
+    private void handleCheer(Matcher matcher) {
+        String arg = matcher.group("arg");
+
+        if (arg != null) {
+            this.printIllegalArguments(
+                    "cheer",
+                    "Command 'cheer' does not accept any arguments.");
+            return;
+        }
+        try {
+            this.printToStdOut(this.cheerleader.cheer());
+        } catch (IOException exception) {
+            this.printInternalError(
+                "An internal error occurred: %s".formatted(exception.getMessage())
+            );
+        }
     }
 
 
