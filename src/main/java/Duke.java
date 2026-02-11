@@ -18,4 +18,8 @@ public class Duke {
 
         app.run();
     }
+
+    public String getResponse(String input) {
+        return "Lil Bro heard: " + input;
+    }
 }
