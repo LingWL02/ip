@@ -9,6 +9,8 @@ import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 
+import components.DialogBox;
+
 
 public class Main extends Application {
 
