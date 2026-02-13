@@ -37,6 +37,12 @@ public class MainWindow {
     /** Injects the Duke instance */
     public void setBot(Bot bot) {
         this.bot = bot;
+
+        // Display greeting message when bot is set
+        String greeting = bot.getGreeting();
+        dialogContainer.getChildren().add(
+            DialogBox.getBotDialog(greeting, dukeImage)
+        );
     }
 
     /**
