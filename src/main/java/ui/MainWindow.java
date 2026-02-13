@@ -6,7 +6,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.application.Platform;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 import bot.Bot;
 import ui.components.DialogBox;
@@ -61,11 +62,13 @@ public class MainWindow {
 
         // Check if bot should terminate and close the window
         if (!bot.isAlive()) {
-            // Use Platform.runLater to ensure the dialog is added before closing
-            Platform.runLater(() -> {
+            // Add a 2-second delay before closing the window
+            PauseTransition delay = new PauseTransition(Duration.seconds(1));
+            delay.setOnFinished(e -> {
                 Stage stage = (Stage) userInput.getScene().getWindow();
                 stage.close();
             });
+            delay.play();
         }
     }
 }
