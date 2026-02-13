@@ -14,17 +14,31 @@ import java.util.List;
 import bot.task.DuplicateTagException;
 import bot.task.Task;
 
+/**
+ * Handles file-based storage operations for tasks, including serialization and deserialization.
+ */
 public class TaskStorage {
     private static final String tagDelimiter = "<DELIMITER>";
     private final File file;
     private final HashMap<String, Class<? extends Task>> deserializationTagTaskMap = new HashMap<>();
 
-
+    /**
+     * Constructs a TaskStorage with the specified file path.
+     *
+     * @param filePath the path to the storage file
+     */
     public TaskStorage(String filePath) {
         this.file = new File(filePath);
     }
 
-
+    /**
+     * Subscribes task classes for deserialization, allowing them to be loaded from storage.
+     *
+     * @param taskClasses the list of task classes to subscribe
+     * @throws DuplicateTagException if duplicate tags are encountered
+     * @throws ReflectiveOperationException if reflection operations fail
+     * @throws SecurityException if security restrictions apply
+     */
     public void subscribeTaskDeserialization(
         List<Class<? extends Task>> taskClasses
     ) throws DuplicateTagException, ReflectiveOperationException, SecurityException {
@@ -52,12 +66,12 @@ public class TaskStorage {
                 while ((line = reader.readLine()) != null) {
                     String[] tagAndSerializedTask = line.split(tagDelimiter);
                     if (tagAndSerializedTask.length != 2) {
-                        continue;  // TODO: Handle invalid serialized task line
+                        continue; // TODO: Handle invalid serialized task line
                     }
                     String tag = tagAndSerializedTask[0];
                     String serializedTask = tagAndSerializedTask[1];
                     if (!this.deserializationTagTaskMap.containsKey(tag)) {
-                        continue;  // TODO: Handle unknown deserialization tag
+                        continue; // TODO: Handle unknown deserialization tag
                     }
 
                     Class<? extends Task> taskClass = this.deserializationTagTaskMap.get(tag);
@@ -73,8 +87,8 @@ public class TaskStorage {
 
 
     private void modifyOrDeleteFromStorage(int index, Task task, boolean delete)
-    throws IOException, ReflectiveOperationException, SecurityException {
-        File tempFile = File.createTempFile("temp",".tmp", this.file.getParentFile());
+            throws IOException, ReflectiveOperationException, SecurityException {
+        File tempFile = File.createTempFile("temp", ".tmp", this.file.getParentFile());
         try (
             BufferedReader reader = new BufferedReader(new FileReader(this.file));
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))
@@ -87,9 +101,9 @@ public class TaskStorage {
                         continue;
                     } else {
                         writer.write(
-                            (String) task.getClass().getMethod("getTag").invoke(null) +
-                            tagDelimiter +
-                            task.serialize()
+                            (String) task.getClass().getMethod("getTag").invoke(null)
+                            + tagDelimiter
+                            + task.serialize()
                         );
                     }
                 } else {
@@ -108,19 +122,28 @@ public class TaskStorage {
 
 
     public void modify(int index, Task task)
-    throws IOException, ReflectiveOperationException, SecurityException {
+            throws IOException, ReflectiveOperationException, SecurityException {
         modifyOrDeleteFromStorage(index, task, false);
     }
 
     public void remove(int index)
-    throws IOException, ReflectiveOperationException, SecurityException {
+            throws IOException, ReflectiveOperationException, SecurityException {
         modifyOrDeleteFromStorage(index, null, true);
     }
 
+    /**
+     * Adds a task to the storage file.
+     *
+     * @param task the task to add
+     * @throws IOException if an I/O error occurs
+     * @throws ReflectiveOperationException if reflection operations fail
+     * @throws SecurityException if security restrictions apply
+     */
     public void add(Task task)
-    throws IOException, ReflectiveOperationException, SecurityException {
+            throws IOException, ReflectiveOperationException, SecurityException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(this.file, true))) {
-            writer.write((String) task.getClass().getMethod("getTag").invoke(null) + tagDelimiter + task.serialize());
+            writer.write((String) task.getClass().getMethod("getTag").invoke(null)
+                    + tagDelimiter + task.serialize());
             writer.newLine();
         }
     }

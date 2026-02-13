@@ -31,6 +31,13 @@ public class Deadline extends Task {
     }
 
 
+    /**
+     * Constructs a Deadline with the specified name, deadline, and time inclusion preference.
+     *
+     * @param name the name of the task
+     * @param by the deadline date and time
+     * @param includeByTime whether to include time in the deadline display
+     */
     public Deadline(String name, LocalDateTime by, Boolean includeByTime) {
         super(name);
         this.by = by;
@@ -61,12 +68,16 @@ public class Deadline extends Task {
     @Override
     public String serialize() {
         return (
-            getTag() + delimiter +
-            this.getName() + delimiter +
-            this.getIsMarked().toString() + delimiter +
-            this.by.toString() + delimiter +
-            this.includeByTime.toString()
-        );
+            getTag()
+            + DELIMITER
+            + this.getName()
+            + DELIMITER
+            + this.getIsMarked().toString()
+            + DELIMITER
+            + this.by.toString()
+            + DELIMITER
+            + this.includeByTime.toString()
+            );
     }
 
     /**
@@ -78,7 +89,7 @@ public class Deadline extends Task {
      *                          the tag does not match the expected Deadline tag.
      */
     public static Deadline deserialize(String serializedTask) {
-        String[] serializedParts = serializedTask.split(delimiter);
+        String[] serializedParts = serializedTask.split(DELIMITER);
         if (serializedParts.length != 5) {
             throw new RuntimeException(); // TODO
         }

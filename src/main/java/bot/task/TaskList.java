@@ -24,13 +24,29 @@ public class TaskList {
     /** The in-memory list of all tasks. */
     private List<Task> taskList = new ArrayList<>();
 
+    /**
+     * Mounts a storage system for persistent task management.
+     *
+     * @param storage the storage system to mount
+     * @throws IOException if an I/O error occurs
+     * @throws ReflectiveOperationException if reflection operations fail
+     * @throws SecurityException if security restrictions apply
+     */
     public void mountStorage(TaskStorage storage)
-    throws IOException, ReflectiveOperationException, SecurityException {
+            throws IOException, ReflectiveOperationException, SecurityException {
         this.storage = Optional.of(storage);
         this.taskList = storage.getTasks();
     }
 
 
+    /**
+     * Adds a task to the list and updates storage if available.
+     *
+     * @param task the task to add
+     * @throws IOException if an I/O error occurs
+     * @throws ReflectiveOperationException if reflection operations fail
+     * @throws SecurityException if security restrictions apply
+     */
     public void add(Task task) throws IOException, ReflectiveOperationException, SecurityException {
         if (this.storage.isPresent()) {
             TaskStorage storage = this.storage.get();
@@ -40,9 +56,20 @@ public class TaskList {
     }
 
 
+    /**
+     * Marks a task as completed.
+     *
+     * @param index the 1-based index of the task to mark
+     * @return the marked task
+     * @throws IndexOutOfBoundsException if the index is invalid
+     * @throws TaskIsMarkedException if the task is already marked
+     * @throws IOException if an I/O error occurs
+     * @throws ReflectiveOperationException if reflection operations fail
+     * @throws SecurityException if security restrictions apply
+     */
     public Task mark(int index)
-    throws IndexOutOfBoundsException, TaskIsMarkedException,
-    IOException, ReflectiveOperationException, SecurityException {
+            throws IndexOutOfBoundsException, TaskIsMarkedException,
+                    IOException, ReflectiveOperationException, SecurityException {
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
@@ -55,7 +82,7 @@ public class TaskList {
             );
         }
         task.mark();
-         if (this.storage.isPresent()) {
+        if (this.storage.isPresent()) {
             TaskStorage storage = this.storage.get();
             try {
                 storage.modify(index - 1, task);
@@ -68,9 +95,20 @@ public class TaskList {
     }
 
 
+    /**
+     * Unmarks a task (marks it as incomplete).
+     *
+     * @param index the 1-based index of the task to unmark
+     * @return the unmarked task
+     * @throws IndexOutOfBoundsException if the index is invalid
+     * @throws TaskIsUnmarkedException if the task is already unmarked
+     * @throws IOException if an I/O error occurs
+     * @throws ReflectiveOperationException if reflection operations fail
+     * @throws SecurityException if security restrictions apply
+     */
     public Task unmark(int index)
-    throws IndexOutOfBoundsException, TaskIsUnmarkedException,
-    IOException, ReflectiveOperationException, SecurityException {
+            throws IndexOutOfBoundsException, TaskIsUnmarkedException,
+                    IOException, ReflectiveOperationException, SecurityException {
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
@@ -98,15 +136,25 @@ public class TaskList {
     }
 
 
+    /**
+     * Removes and returns a task from the list.
+     *
+     * @param index the 1-based index of the task to remove
+     * @return the removed task
+     * @throws IndexOutOfBoundsException if the index is invalid
+     * @throws IOException if an I/O error occurs
+     * @throws ReflectiveOperationException if reflection operations fail
+     * @throws SecurityException if security restrictions apply
+     */
     public Task pop(int index)
-    throws IndexOutOfBoundsException,
-    IOException, ReflectiveOperationException, SecurityException {
+            throws IndexOutOfBoundsException,
+                    IOException, ReflectiveOperationException, SecurityException {
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
             );
         }
-         if (this.storage.isPresent()) {
+        if (this.storage.isPresent()) {
             TaskStorage storage = this.storage.get();
             storage.remove(index - 1);
         }
@@ -139,6 +187,12 @@ public class TaskList {
         return bobTheBuilder.toString();
     }
 
+    /**
+     * Finds tasks that contain the specified keyword in their name.
+     *
+     * @param keyword the keyword to search for
+     * @return a list of pairs containing 1-based indices and matching tasks
+     */
     public List<Pair<Integer, Task>> findTasks(String keyword) {
         List<Pair<Integer, Task>> foundTasks = new ArrayList<>();
         for (int i = 0; i < this.taskList.size(); i++) {

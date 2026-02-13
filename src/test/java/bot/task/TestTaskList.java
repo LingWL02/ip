@@ -1,19 +1,16 @@
 package bot.task;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
-
-import bot.task.Task;
-import bot.task.TaskList;
-import bot.task.Todo;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class TaskListTest {
 
     @Test
     void addTask_increasesSize() throws Exception {
         TaskList list = new TaskList();
-        Task t = new Todo("read book");   // use your real Task subclass
+        Task t = new Todo("read book"); // use your real Task subclass
 
         list.add(t);
 

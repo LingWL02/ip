@@ -1,9 +1,12 @@
 package bot;
 
+import java.io.IOException;
 import java.time.DateTimeException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,11 +21,6 @@ import bot.task.TaskIsMarkedException;
 import bot.task.TaskIsUnmarkedException;
 import bot.task.TaskList;
 import bot.task.Todo;
-
-import java.util.Scanner;
-import java.time.LocalDateTime;
-import java.io.IOException;
-
 import utilities.Pair;
 
 /**
@@ -98,7 +96,9 @@ public class Bot {
         this.printToStdOut(this.getGreeting());
 
         while (this.isAlive) {
-            if (!this.appScanner.hasNextLine()) return;
+            if (!this.appScanner.hasNextLine()) {
+                return;
+            }
             String userInput = this.appScanner.nextLine();
             String response = this.getResponse(userInput);
             this.printToStdOut(response);
@@ -183,14 +183,18 @@ public class Bot {
         );
     }
 
+    /**
+     * Initializes the bot by configuring all necessary components.
+     *
+     * @throws Exception if any component fails to initialize
+     */
     public void initialize() throws Exception {
         try {
             this.configureTaskStorage();
             this.configureTaskList();
             this.configureParser();
             this.configureCheerLeader();
-        }
-        catch (Exception exception) {
+        } catch (Exception exception) {
             this.isAlive = false;
             throw exception;
         }
@@ -207,7 +211,7 @@ public class Bot {
 
     /**
      * Checks if the bot is still alive/running.
-     * 
+     *
      * @return true if the bot is still alive, false if it should be terminated
      */
     public boolean isAlive() {
@@ -237,17 +241,17 @@ public class Bot {
         Matcher matcher = parsedResult.getValue();
 
         return switch (tag) {
-            case BYE -> this.handleBye(matcher);
-            case LIST -> this.handleList(matcher);
-            case MARK -> this.handleMark(matcher);
-            case UNMARK -> this.handleUnmark(matcher);
-            case TODO -> this.handleTodo(matcher);
-            case DEADLINE -> this.handleDeadline(matcher);
-            case EVENT -> this.handleEvent(matcher);
-            case DELETE -> this.handleDelete(matcher);
-            case FIND -> this.handleFind(matcher);
-            case CHEER -> this.handleCheer(matcher);
-            default -> "TODO: Tag not implemented.";
+        case BYE -> this.handleBye(matcher);
+        case LIST -> this.handleList(matcher);
+        case MARK -> this.handleMark(matcher);
+        case UNMARK -> this.handleUnmark(matcher);
+        case TODO -> this.handleTodo(matcher);
+        case DEADLINE -> this.handleDeadline(matcher);
+        case EVENT -> this.handleEvent(matcher);
+        case DELETE -> this.handleDelete(matcher);
+        case FIND -> this.handleFind(matcher);
+        case CHEER -> this.handleCheer(matcher);
+        default -> "TODO: Tag not implemented.";
         };
     }
 
@@ -349,7 +353,8 @@ public class Bot {
         } catch (NumberFormatException exception) {
             return this.formatIllegalArguments(
                     expectedFormatMessage,
-                    "Command 'unmark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
+                    "Command 'unmark' expects argument 'index' to be a positive integer, got '%s'"
+                            .formatted(indexString)
             );
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             return this.formatInternalError(
@@ -451,7 +456,8 @@ public class Bot {
     private String handleEvent(Matcher matcher) {
         String expectedFormatMessage =
                 """
-                        event -from <year>-<month>-<day>[,<hour>:<minute>] -to <year>-<month>-<day>[,<hour>:<minute>] <name>
+                        event -from <year>-<month>-<day>[,<hour>:<minute>]
+                                -to <year>-<month>-<day>[,<hour>:<minute>] <name>
                         """;
 
         String fromField = matcher.group("fromField");
@@ -541,7 +547,8 @@ public class Bot {
         } catch (NumberFormatException exception) {
             return this.formatIllegalArguments(
                     expectedFormatMessage,
-                    "Command 'delete' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
+                    "Command 'delete' expects argument 'index' to be a positive integer, got '%s'"
+                            .formatted(indexString)
             );
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             return this.formatInternalError(

@@ -10,7 +10,7 @@ package bot.task;
 public abstract class Task {
 
     /** Delimiter used for serializing task fields to a string. */
-    protected static final String delimiter = ",";
+    protected static final String DELIMITER = ",";
 
     /** The name/description of the task. */
     private final String name;

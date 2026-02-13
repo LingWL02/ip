@@ -40,10 +40,12 @@ public class Todo extends Task {
     @Override
     public String serialize() {
         return (
-            getTag() + delimiter +
-            this.getName() + delimiter +
-            this.getIsMarked().toString()
-        );
+            getTag()
+            + DELIMITER
+            + this.getName()
+            + DELIMITER
+            + this.getIsMarked().toString()
+            );
     }
 
     /**
@@ -55,7 +57,7 @@ public class Todo extends Task {
      *                          the tag does not match the expected Todo tag.
      */
     public static Task deserialize(String serializedTask) {
-        String[] serializedParts = serializedTask.split(delimiter);
+        String[] serializedParts = serializedTask.split(DELIMITER);
         if (serializedParts.length != 3) {
             throw new RuntimeException(); // TODO
         }

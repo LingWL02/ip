@@ -36,6 +36,15 @@ public class Event extends Task {
         this.end = end;
     }
 
+    /**
+     * Constructs an Event with detailed time inclusion settings.
+     *
+     * @param name the name of the event
+     * @param start the start date and time
+     * @param includeStartTime whether to include time in the start display
+     * @param end the end date and time
+     * @param includeEndTime whether to include time in the end display
+     */
     public Event(
         String name, LocalDateTime start, Boolean includeStartTime,
         LocalDateTime end, Boolean includeEndTime
@@ -78,14 +87,20 @@ public class Event extends Task {
     @Override
     public String serialize() {
         return (
-            getTag() + delimiter +
-            this.getName() + delimiter +
-            this.getIsMarked().toString() + delimiter +
-            this.start.toString() + delimiter +
-            this.includeStartTime.toString() + delimiter +
-            this.end.toString() + delimiter +
-            this.includeEndTime.toString()
-        );
+            getTag()
+            + DELIMITER
+            + this.getName()
+            + DELIMITER
+            + this.getIsMarked().toString()
+            + DELIMITER
+            + this.start.toString()
+            + DELIMITER
+            + this.includeStartTime.toString()
+            + DELIMITER
+            + this.end.toString()
+            + DELIMITER
+            + this.includeEndTime.toString()
+            );
     }
 
     /**
@@ -97,7 +112,7 @@ public class Event extends Task {
      *                          the tag does not match the expected Event tag.
      */
     public static Task deserialize(String serializedTask) {
-        String[] serializedParts = serializedTask.split(delimiter);
+        String[] serializedParts = serializedTask.split(DELIMITER);
         if (serializedParts.length != 7) {
             throw new RuntimeException(); // TODO
         }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import utilities.Pair;
 
 /**
@@ -57,7 +58,7 @@ public class RegexParser<T> {
             Pattern pattern = patternTagMapping.getKey();
             T tag = patternTagMapping.getValue();
 
-            Matcher matcher = pattern.matcher(normalizedString.strip());  // Normalize
+            Matcher matcher = pattern.matcher(normalizedString.strip()); // Normalize
 
             if (matcher.matches()) {
                 results.add(new Pair<T, Matcher>(tag, matcher));
