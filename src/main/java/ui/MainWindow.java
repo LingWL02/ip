@@ -5,6 +5,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.application.Platform;
 
 import bot.Bot;
 import ui.components.DialogBox;
@@ -50,5 +52,14 @@ public class MainWindow {
             DialogBox.getBotDialog(response, dukeImage)
         );
         userInput.clear();
+
+        // Check if bot should terminate and close the window
+        if (!bot.isAlive()) {
+            // Use Platform.runLater to ensure the dialog is added before closing
+            Platform.runLater(() -> {
+                Stage stage = (Stage) userInput.getScene().getWindow();
+                stage.close();
+            });
+        }
     }
 }

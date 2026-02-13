@@ -88,35 +88,23 @@ public class Bot {
         System.out.printf("%s\n\n", this.lineSeparator);
 
         try {
-            this.configureTaskStorage();
-            this.configureTaskList();
-            this.configureParser();
-            this.configureCheerLeader();
+            this.initialize();
         } catch (Exception exception) {
             this.printToStdOut(
                     "EXCEPTION: %s\nTerminating app...".formatted(exception.toString())
             );
             return;
         }
-        this.printToStdOut("Hello! I'm %s!\nWhat can I do for you?".formatted(this.name));
+        this.printToStdOut(this.getGreeting());
 
         while (this.isAlive) {
             if (!this.appScanner.hasNextLine()) return;
             String userInput = this.appScanner.nextLine();
-
-            List<Pair<ParserTag, Matcher>> parsedResults = this.regexParser.parse(userInput);
-
-            if (parsedResults.isEmpty()) {
-                this.printToStdOut("UNRECOGNIZED COMMAND: Please try again.");
-                continue;
-            } else if (parsedResults.size() > 1) {
-                this.printToStdOut("ERROR: User Input matched multiple entries.\nTerminating app...");
-                return;
-            }
-            this.handleParsedResults(parsedResults.getFirst());
+            String response = this.getResponse(userInput);
+            this.printToStdOut(response);
         }
 
-        this.printToStdOut("Bye. Hope to see you again soon!");
+        this.printToStdOut(this.getFarewell());
     }
 
     /**
@@ -195,20 +183,60 @@ public class Bot {
         );
     }
 
+    public void initialize() throws Exception {
+        try {
+            this.configureTaskStorage();
+            this.configureTaskList();
+            this.configureParser();
+            this.configureCheerLeader();
+        }
+        catch (Exception exception) {
+            this.isAlive = false;
+            throw exception;
+        }
+    }
+
+    public String getGreeting() {
+        return "Hello! I'm %s!\nWhat can I do for you?".formatted(this.name);
+
+    }
+
+    public String getFarewell() {
+        return "Bye. Hope to see you again soon!";
+    }
+
+    /**
+     * Checks if the bot is still alive/running.
+     * 
+     * @return true if the bot is still alive, false if it should be terminated
+     */
+    public boolean isAlive() {
+        return this.isAlive;
+    }
+
     public String getResponse(String input) {
-        return "Lil Bro heard: " + input;
+        List<Pair<ParserTag, Matcher>> parsedResults = this.regexParser.parse(input);
+
+        if (parsedResults.isEmpty()) {
+            return "UNRECOGNIZED COMMAND: Please try again.";
+        } else if (parsedResults.size() > 1) {
+            this.isAlive = false; // Terminate app for multiple matches
+            return "ERROR: User Input matched multiple entries.\nTerminating app...";
+        }
+        return this.handleParsedResults(parsedResults.getFirst());
     }
 
     /**
      * Routes a parsed command result to the appropriate handler method.
      *
      * @param parsedResult A pair containing the command tag and the regex matcher with captured groups.
+     * @return The response string for the command
      */
-    private void handleParsedResults(Pair<ParserTag, Matcher> parsedResult) {
+    private String handleParsedResults(Pair<ParserTag, Matcher> parsedResult) {
         ParserTag tag = parsedResult.getKey();
         Matcher matcher = parsedResult.getValue();
 
-        switch (tag) {
+        return switch (tag) {
             case BYE -> this.handleBye(matcher);
             case LIST -> this.handleList(matcher);
             case MARK -> this.handleMark(matcher);
@@ -219,8 +247,8 @@ public class Bot {
             case DELETE -> this.handleDelete(matcher);
             case FIND -> this.handleFind(matcher);
             case CHEER -> this.handleCheer(matcher);
-            default -> this.printToStdOut("TODO: Tag not implemented.");
-        }
+            default -> "TODO: Tag not implemented.";
+        };
     }
 
     /**
@@ -228,35 +256,36 @@ public class Bot {
      * Sets the isAlive flag to false if no extraneous arguments are provided.
      *
      * @param matcher The regex matcher containing captured groups from the command.
+     * @return The response string for the bye command
      */
-    private void handleBye(Matcher matcher) {
+    private String handleBye(Matcher matcher) {
         String arg = matcher.group("arg");
 
         if (arg != null) {
-            this.printIllegalArguments(
+            return this.formatIllegalArguments(
                     "bye",
                     "Command 'bye' does not accept any arguments.");
-            return;
         }
         this.isAlive = false;
+        return this.getFarewell();
     }
 
     /**
      * Handles the 'list' command to display all tasks.
-     * Prints an error if extraneous arguments are provided.
+     * Returns an error if extraneous arguments are provided.
      *
      * @param matcher The regex matcher containing captured groups from the command.
+     * @return The response string for the list command
      */
-    private void handleList(Matcher matcher) {
+    private String handleList(Matcher matcher) {
         String arg = matcher.group("arg");
 
         if (arg != null) {
-            this.printIllegalArguments(
+            return this.formatIllegalArguments(
                     "list",
                     "Command 'list' does not accept any arguments.");
-            return;
         }
-        this.printToStdOut("Task List:\n%s".formatted(this.taskList.toString()));
+        return "Task List:\n%s".formatted(this.taskList.toString());
     }
 
     /**
@@ -264,31 +293,31 @@ public class Bot {
      * Expects a 1-based index argument specifying which task to mark.
      *
      * @param matcher The regex matcher containing the index captured group.
+     * @return The response string for the mark command
      */
-    private void handleMark(Matcher matcher) {
+    private String handleMark(Matcher matcher) {
         String indexString = matcher.group("index");
         String expectedFormatMessage = "mark <index>";
 
         if (indexString == null) {
-            this.printMissingArguments(
+            return this.formatMissingArguments(
                     expectedFormatMessage, "Command 'mark' expects argument 'index'."
             );
-            return;
         }
         indexString = indexString.strip();
 
         try {
             Integer index = Integer.parseUnsignedInt(indexString);
-            this.printToStdOut("Marked:\n%s".formatted(this.taskList.mark(index).toString()));
+            return "Marked:\n%s".formatted(this.taskList.mark(index).toString());
         } catch (IndexOutOfBoundsException | TaskIsMarkedException exception) {
-            this.printDisallowed(expectedFormatMessage, exception.getMessage());
+            return this.formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (NumberFormatException exception) {
-            this.printIllegalArguments(
+            return this.formatIllegalArguments(
                     expectedFormatMessage,
                     "Command 'mark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
-            this.printInternalError(
+            return this.formatInternalError(
                     "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
@@ -299,31 +328,31 @@ public class Bot {
      * Expects a 1-based index argument specifying which task to unmark.
      *
      * @param matcher The regex matcher containing the index captured group.
+     * @return The response string for the unmark command
      */
-    private void handleUnmark(Matcher matcher) {
+    private String handleUnmark(Matcher matcher) {
         String indexString = matcher.group("index");
         String expectedFormatMessage = "unmark <index>";
 
         if (indexString == null) {
-            this.printMissingArguments(
+            return this.formatMissingArguments(
                     expectedFormatMessage, "Command 'unmark' expects argument 'index'."
             );
-            return;
         }
         indexString = indexString.strip();
 
         try {
             Integer index = Integer.parseUnsignedInt(indexString);
-            this.printToStdOut("Unmarked:\n%s".formatted(this.taskList.unmark(index).toString()));
+            return "Unmarked:\n%s".formatted(this.taskList.unmark(index).toString());
         } catch (IndexOutOfBoundsException | TaskIsUnmarkedException exception) {
-            this.printDisallowed(expectedFormatMessage, exception.getMessage());
+            return this.formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (NumberFormatException exception) {
-            this.printIllegalArguments(
+            return this.formatIllegalArguments(
                     expectedFormatMessage,
                     "Command 'unmark' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
-            this.printInternalError(
+            return this.formatInternalError(
                     "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
@@ -334,23 +363,23 @@ public class Bot {
      * Expects a name argument for the task description.
      *
      * @param matcher The regex matcher containing the name captured group.
+     * @return The response string for the todo command
      */
-    private void handleTodo(Matcher matcher) {
+    private String handleTodo(Matcher matcher) {
         String name = matcher.group("name");
         if (name == null) {
-            this.printMissingArguments(
+            return this.formatMissingArguments(
                     "todo <name>",
                     "Command 'todo' expects argument 'name'."
             );
-            return;
         }
         name = name.strip();
         Todo todo = new Todo(name);
         try {
             this.taskList.add(todo);
-            this.printToStdOut("Todo added:\n%s".formatted(todo.toString()));
+            return "Todo added:\n%s".formatted(todo.toString());
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
-            this.printInternalError(
+            return this.formatInternalError(
                     "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
@@ -362,8 +391,9 @@ public class Bot {
      * If time is not specified, defaults to 23:59.
      *
      * @param matcher The regex matcher containing name, year, month, day, hour, minute captured groups.
+     * @return The response string for the deadline command
      */
-    private void handleDeadline(Matcher matcher) {
+    private String handleDeadline(Matcher matcher) {
         String expectedFormatMessage = "deadline -by <year>-<month>-<day>[,<hour>:<minute>] <name>";
         String byField = matcher.group("byField");
         String by = matcher.group("by");
@@ -371,19 +401,16 @@ public class Bot {
 
 
         if (byField == null) {
-            printMissingFlags(expectedFormatMessage, "Command 'deadline' expects flag '-by'");
-            return;
+            return formatMissingFlags(expectedFormatMessage, "Command 'deadline' expects flag '-by'");
         }
         if (by == null) {
-            printIllegalFlags(
+            return formatIllegalFlags(
                     expectedFormatMessage,
                     "Command 'deadline' flag '-by' expects date and time in the specified format."
             );
-            return;
         }
         if (name == null) {
-            printMissingArguments(expectedFormatMessage, "Command 'deadline' expects argument 'name'");
-            return;
+            return formatMissingArguments(expectedFormatMessage, "Command 'deadline' expects argument 'name'");
         }
         String yearString = matcher.group("year");
         String monthString = matcher.group("month");
@@ -402,11 +429,11 @@ public class Bot {
             LocalDateTime dateTime = LocalDateTime.of(year, month, day, hour, minute);
             Deadline deadline = new Deadline(name, dateTime, includeByTime);
             this.taskList.add(deadline);
-            this.printToStdOut("Deadline added:\n%s".formatted(deadline.toString()));
+            return "Deadline added:\n%s".formatted(deadline.toString());
         } catch (DateTimeException exception) {
-            printIllegalArguments(expectedFormatMessage, exception.getMessage());
+            return formatIllegalArguments(expectedFormatMessage, exception.getMessage());
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
-            this.printInternalError(
+            return this.formatInternalError(
                     "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
@@ -419,8 +446,9 @@ public class Bot {
      * If end time is not specified, defaults to 23:59.
      *
      * @param matcher The regex matcher containing name, from/to date/time captured groups.
+     * @return The response string for the event command
      */
-    private void handleEvent(Matcher matcher) {
+    private String handleEvent(Matcher matcher) {
         String expectedFormatMessage =
                 """
                         event -from <year>-<month>-<day>[,<hour>:<minute>] -to <year>-<month>-<day>[,<hour>:<minute>] <name>
@@ -433,28 +461,23 @@ public class Bot {
         String name = matcher.group("name");
 
         if (fromField == null) {
-            this.printMissingFlags(expectedFormatMessage, "Command 'event' expects flag '-from'.");
-            return;
+            return this.formatMissingFlags(expectedFormatMessage, "Command 'event' expects flag '-from'.");
         }
         if (toField == null) {
-            this.printMissingFlags(expectedFormatMessage, "Command 'event' expects flag '-to'.");
-            return;
+            return this.formatMissingFlags(expectedFormatMessage, "Command 'event' expects flag '-to'.");
         }
         if (from == null) {
-            this.printIllegalFlags(
+            return this.formatIllegalFlags(
                     expectedFormatMessage,
                     "Command 'event' flag '-from' expects a valid date/time.");
-            return;
         }
         if (to == null) {
-            this.printIllegalFlags(
+            return this.formatIllegalFlags(
                     expectedFormatMessage,
                     "Command 'event' flag '-to' expects a valid date/time.");
-            return;
         }
         if (name == null) {
-            this.printMissingArguments(expectedFormatMessage, "Command 'event' expects argument 'name'.");
-            return;
+            return this.formatMissingArguments(expectedFormatMessage, "Command 'event' expects argument 'name'.");
         }
         int fromYear = Integer.parseUnsignedInt(matcher.group("fromYear"));
         int fromMonth = Integer.parseUnsignedInt(matcher.group("fromMonth"));
@@ -479,11 +502,11 @@ public class Bot {
             LocalDateTime endDateTime = LocalDateTime.of(toYear, toMonth, toDay, toHour, toMin);
             Event event = new Event(name.strip(), startDateTime, includeStartTime, endDateTime, includeEndTime);
             this.taskList.add(event);
-            this.printToStdOut("Event added:\n%s".formatted(event.toString()));
+            return "Event added:\n%s".formatted(event.toString());
         } catch (DateTimeException exception) {
-            printIllegalArguments(expectedFormatMessage, exception.getMessage());
+            return formatIllegalArguments(expectedFormatMessage, exception.getMessage());
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
-            this.printInternalError(
+            return this.formatInternalError(
                     "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
@@ -494,50 +517,47 @@ public class Bot {
      * Expects a 1-based index argument specifying which task to delete.
      *
      * @param matcher The regex matcher containing the index captured group.
+     * @return The response string for the delete command
      */
-    private void handleDelete(Matcher matcher) {
+    private String handleDelete(Matcher matcher) {
         String indexString = matcher.group("index");
         String expectedFormatMessage = "delete <index>";
 
         if (indexString == null) {
-            this.printMissingArguments(
+            return this.formatMissingArguments(
                     expectedFormatMessage, "Command 'index' expects argument 'index'."
             );
-            return;
         }
         indexString = indexString.strip();
 
         try {
             int index = Integer.parseUnsignedInt(indexString);
             int sizeAfter = this.taskList.getSize() - 1;
-            this.printToStdOut(
-                    "Deleted:\n%s\n%d %s remaining,".formatted(
+            return "Deleted:\n%s\n%d %s remaining,".formatted(
                             this.taskList.pop(index).toString(), sizeAfter, (sizeAfter > 1) ? "tasks" : "task"
-                    )
-            );
+                    );
         } catch (IndexOutOfBoundsException exception) {
-            this.printDisallowed(expectedFormatMessage, exception.getMessage());
+            return this.formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (NumberFormatException exception) {
-            this.printIllegalArguments(
+            return this.formatIllegalArguments(
                     expectedFormatMessage,
                     "Command 'delete' expects argument 'index' to be a positive integer, got '%s'".formatted(indexString)
             );
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
-            this.printInternalError(
+            return this.formatInternalError(
                     "An internal error occured: %s".formatted(exception.getMessage())
             );
         }
     }
 
-    private void handleFind(Matcher matcher) {
+    private String handleFind(Matcher matcher) {
         String keyword = matcher.group("keyword");
         String expectedFormatMessage = "find <keyword>";
 
         if (keyword == null) {
-            this.printMissingArguments(
+            return this.formatMissingArguments(
                     expectedFormatMessage, "Command 'find' expects argument 'keyword'."
             );
-            return;
         }
         keyword = keyword.strip();
         List<Pair<Integer, Task>> foundTasks = this.taskList.findTasks(keyword);
@@ -546,23 +566,22 @@ public class Bot {
             Pair<Integer, Task> pair = foundTasks.get(i);
             bobTheBuilder.append("%d. %s\n".formatted(pair.getKey(), pair.getValue().toString()));
         }
-        this.printToStdOut(bobTheBuilder.toString());
+        return bobTheBuilder.toString();
     }
 
 
-    private void handleCheer(Matcher matcher) {
+    private String handleCheer(Matcher matcher) {
         String arg = matcher.group("arg");
 
         if (arg != null) {
-            this.printIllegalArguments(
+            return this.formatIllegalArguments(
                     "cheer",
                     "Command 'cheer' does not accept any arguments.");
-            return;
         }
         try {
-            this.printToStdOut(this.cheerleader.cheer());
+            return this.cheerleader.cheer();
         } catch (IOException exception) {
-            this.printInternalError(
+            return this.formatInternalError(
                 "An internal error occurred: %s".formatted(exception.getMessage())
             );
         }
@@ -570,61 +589,67 @@ public class Bot {
 
 
     /**
-     * Prints an error message for illegal arguments.
+     * Formats an error message for illegal arguments.
      *
      * @param expectedFormatMessage The expected command format.
      * @param errorMessage          The specific error description.
+     * @return The formatted error message
      */
-    private void printIllegalArguments(String expectedFormatMessage, String errorMessage) {
-        this.printToStdOut("EXPECTED FORMAT: %s\nILLEGAL ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage));
+    private String formatIllegalArguments(String expectedFormatMessage, String errorMessage) {
+        return "EXPECTED FORMAT: %s\nILLEGAL ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage);
     }
 
     /**
-     * Prints an error message for missing arguments.
+     * Formats an error message for missing arguments.
      *
      * @param expectedFormatMessage The expected command format.
      * @param errorMessage          The specific error description.
+     * @return The formatted error message
      */
-    private void printMissingArguments(String expectedFormatMessage, String errorMessage) {
-        this.printToStdOut("EXPECTED FORMAT: %s\nMISSING ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage));
+    private String formatMissingArguments(String expectedFormatMessage, String errorMessage) {
+        return "EXPECTED FORMAT: %s\nMISSING ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage);
     }
 
     /**
-     * Prints an error message for disallowed operations.
+     * Formats an error message for disallowed operations.
      *
      * @param expectedFormatMessage The expected command format.
      * @param errorMessage          The specific error description.
+     * @return The formatted error message
      */
-    private void printDisallowed(String expectedFormatMessage, String errorMessage) {
-        this.printToStdOut("EXPECTED FORMAT: %s\nDISALLOWED: %s".formatted(expectedFormatMessage, errorMessage));
+    private String formatDisallowed(String expectedFormatMessage, String errorMessage) {
+        return "EXPECTED FORMAT: %s\nDISALLOWED: %s".formatted(expectedFormatMessage, errorMessage);
     }
 
     /**
-     * Prints an error message for missing command flags.
+     * Formats an error message for missing command flags.
      *
      * @param expectedFormatMessage The expected command format.
      * @param errorMessage          The specific error description.
+     * @return The formatted error message
      */
-    private void printMissingFlags(String expectedFormatMessage, String errorMessage) {
-        this.printToStdOut("EXPECTED FORMAT: %s\nMISSING FLAGS: %s".formatted(expectedFormatMessage, errorMessage));
+    private String formatMissingFlags(String expectedFormatMessage, String errorMessage) {
+        return "EXPECTED FORMAT: %s\nMISSING FLAGS: %s".formatted(expectedFormatMessage, errorMessage);
     }
 
     /**
-     * Prints an error message for illegal flag values.
+     * Formats an error message for illegal flag values.
      *
      * @param expectedFormatMessage The expected command format.
      * @param errorMessage          The specific error description.
+     * @return The formatted error message
      */
-    private void printIllegalFlags(String expectedFormatMessage, String errorMessage) {
-        this.printToStdOut("EXPECTED FORMAT: %s\nILLEGAL FLAGS: %s".formatted(expectedFormatMessage, errorMessage));
+    private String formatIllegalFlags(String expectedFormatMessage, String errorMessage) {
+        return "EXPECTED FORMAT: %s\nILLEGAL FLAGS: %s".formatted(expectedFormatMessage, errorMessage);
     }
 
     /**
-     * Prints an internal error message.
+     * Formats an internal error message.
      *
      * @param errorMessage The error description.
+     * @return The formatted error message
      */
-    private void printInternalError(String errorMessage) {
-        this.printToStdOut("INTERNAL ERROR: %s".formatted(errorMessage));
+    private String formatInternalError(String errorMessage) {
+        return "INTERNAL ERROR: %s".formatted(errorMessage);
     }
 }

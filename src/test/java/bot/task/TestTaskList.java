@@ -1,4 +1,4 @@
-package app.task;
+package bot.task;
 
 import org.junit.jupiter.api.Test;
 
