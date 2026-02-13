@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -53,12 +52,7 @@ class TestTaskStorage {
 
     @Test
     void subscribeTaskDeserialization_validTaskClasses_subscribesSuccessfully() throws Exception {
-        List<Class<? extends Task>> taskClasses = new ArrayList<>();
-        taskClasses.add(Todo.class);
-        taskClasses.add(Deadline.class);
-        taskClasses.add(Event.class);
-
-        taskStorage.subscribeTaskDeserialization(taskClasses);
+        taskStorage.subscribeTaskDeserialization(Todo.class, Deadline.class, Event.class);
 
         // If no exception is thrown, subscription was successful
         assertTrue(true);
@@ -66,20 +60,14 @@ class TestTaskStorage {
 
     @Test
     void subscribeTaskDeserialization_duplicateTags_throwsDuplicateTagException() throws Exception {
-        List<Class<? extends Task>> taskClasses = new ArrayList<>();
-        taskClasses.add(Todo.class);
-        taskClasses.add(Todo.class); // Adding same class twice should cause duplicate tag
-
         assertThrows(DuplicateTagException.class, () -> {
-            taskStorage.subscribeTaskDeserialization(taskClasses);
+            taskStorage.subscribeTaskDeserialization(Todo.class, Todo.class);
         });
     }
 
     @Test
     void getTasks_emptyFile_returnsEmptyList() throws Exception {
-        List<Class<? extends Task>> taskClasses = new ArrayList<>();
-        taskClasses.add(Todo.class);
-        taskStorage.subscribeTaskDeserialization(taskClasses);
+        taskStorage.subscribeTaskDeserialization(Todo.class);
 
         List<Task> tasks = taskStorage.getTasks();
 
@@ -88,9 +76,7 @@ class TestTaskStorage {
 
     @Test
     void add_singleTask_addsTaskToStorage() throws Exception {
-        List<Class<? extends Task>> taskClasses = new ArrayList<>();
-        taskClasses.add(Todo.class);
-        taskStorage.subscribeTaskDeserialization(taskClasses);
+        taskStorage.subscribeTaskDeserialization(Todo.class);
 
         Task task = new Todo("Read book");
         taskStorage.add(task);
@@ -103,10 +89,7 @@ class TestTaskStorage {
 
     @Test
     void add_multipleTasks_addsAllTasksToStorage() throws Exception {
-        List<Class<? extends Task>> taskClasses = new ArrayList<>();
-        taskClasses.add(Todo.class);
-        taskClasses.add(Deadline.class);
-        taskStorage.subscribeTaskDeserialization(taskClasses);
+        taskStorage.subscribeTaskDeserialization(Todo.class, Deadline.class);
 
         Task todo = new Todo("Buy groceries");
         Task deadline = new Deadline("Submit assignment", LocalDateTime.of(2026, 3, 15, 23, 59));
@@ -122,9 +105,7 @@ class TestTaskStorage {
 
     @Test
     void modify_validIndex_modifiesTask() throws Exception {
-        List<Class<? extends Task>> taskClasses = new ArrayList<>();
-        taskClasses.add(Todo.class);
-        taskStorage.subscribeTaskDeserialization(taskClasses);
+        taskStorage.subscribeTaskDeserialization(Todo.class);
 
         Task originalTask = new Todo("Original task");
         taskStorage.add(originalTask);
@@ -141,9 +122,7 @@ class TestTaskStorage {
 
     @Test
     void remove_validIndex_removesTask() throws Exception {
-        List<Class<? extends Task>> taskClasses = new ArrayList<>();
-        taskClasses.add(Todo.class);
-        taskStorage.subscribeTaskDeserialization(taskClasses);
+        taskStorage.subscribeTaskDeserialization(Todo.class);
 
         Task task1 = new Todo("Task 1");
         Task task2 = new Todo("Task 2");
@@ -163,10 +142,7 @@ class TestTaskStorage {
 
     @Test
     void getTasks_afterModifications_returnsCorrectTasks() throws Exception {
-        List<Class<? extends Task>> taskClasses = new ArrayList<>();
-        taskClasses.add(Todo.class);
-        taskClasses.add(Deadline.class);
-        taskStorage.subscribeTaskDeserialization(taskClasses);
+        taskStorage.subscribeTaskDeserialization(Todo.class, Deadline.class);
 
         // Add initial tasks
         Task todo = new Todo("Initial todo");
@@ -196,11 +172,7 @@ class TestTaskStorage {
 
     @Test
     void getTasks_mixedTaskTypes_deserializesAllCorrectly() throws Exception {
-        List<Class<? extends Task>> taskClasses = new ArrayList<>();
-        taskClasses.add(Todo.class);
-        taskClasses.add(Deadline.class);
-        taskClasses.add(Event.class);
-        taskStorage.subscribeTaskDeserialization(taskClasses);
+        taskStorage.subscribeTaskDeserialization(Todo.class, Deadline.class, Event.class);
 
         Todo todo = new Todo("Buy milk");
         todo.mark();
@@ -236,9 +208,7 @@ class TestTaskStorage {
         String nonExistentPath = tempDir.resolve("non_existent.txt").toString();
         TaskStorage storage = new TaskStorage(nonExistentPath);
 
-        List<Class<? extends Task>> taskClasses = new ArrayList<>();
-        taskClasses.add(Todo.class);
-        storage.subscribeTaskDeserialization(taskClasses);
+        storage.subscribeTaskDeserialization(Todo.class);
 
         List<Task> tasks = storage.getTasks();
 
@@ -248,13 +218,9 @@ class TestTaskStorage {
 
     @Test
     void storage_persistsAcrossInstances() throws Exception {
-        List<Class<? extends Task>> taskClasses = new ArrayList<>();
-        taskClasses.add(Todo.class);
-        taskClasses.add(Deadline.class);
-
         // First instance - add tasks
         TaskStorage storage1 = new TaskStorage(testFilePath);
-        storage1.subscribeTaskDeserialization(taskClasses);
+        storage1.subscribeTaskDeserialization(Todo.class, Deadline.class);
 
         Task todo = new Todo("Persistent task");
         todo.mark();
@@ -265,7 +231,7 @@ class TestTaskStorage {
 
         // Second instance - read tasks
         TaskStorage storage2 = new TaskStorage(testFilePath);
-        storage2.subscribeTaskDeserialization(taskClasses);
+        storage2.subscribeTaskDeserialization(Todo.class, Deadline.class);
 
         List<Task> tasks = storage2.getTasks();
         assertEquals(2, tasks.size());

@@ -3,7 +3,6 @@ package bot;
 import java.io.IOException;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -118,7 +117,7 @@ public class Bot {
 
     private void configureTaskStorage() throws Exception {
         this.taskStorage.subscribeTaskDeserialization(
-                Arrays.asList(Todo.class, Deadline.class, Event.class)
+            Todo.class, Deadline.class, Event.class
         );
     }
 
