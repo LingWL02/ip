@@ -40,7 +40,7 @@ public class TaskStorage {
      * @throws SecurityException if security restrictions apply
      */
     public void subscribeTaskDeserialization(
-        List<Class<? extends Task>> taskClasses
+        Class<? extends Task>... taskClasses
     ) throws DuplicateTagException, ReflectiveOperationException, SecurityException {
         for (Class<? extends Task> taskClass : taskClasses) {
             String tag = (String) taskClass.getMethod("getTag").invoke(null);
