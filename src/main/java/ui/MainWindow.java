@@ -1,3 +1,4 @@
+package ui;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
@@ -5,7 +6,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 
-
+import bot.Bot;
 import ui.components.DialogBox;
 
 /**
@@ -22,7 +23,7 @@ public class MainWindow {
     @FXML
     private Button sendButton;
 
-    private Duke duke;
+    private Bot bot;
 
     private Image userImage = new Image(this.getClass().getResourceAsStream("/images/pdidd.jpg"));
     private Image dukeImage = new Image(this.getClass().getResourceAsStream("/images/jefep.jpg"));
@@ -32,8 +33,8 @@ public class MainWindow {
     }
 
     /** Injects the Duke instance */
-    public void setDuke(Duke d) {
-        duke = d;
+    public void setBot(Bot bot) {
+        this.bot = bot;
     }
 
     /**
@@ -43,10 +44,10 @@ public class MainWindow {
     @FXML
     private void handleUserInput() {
         String input = userInput.getText();
-        String response = duke.getResponse(input);
+        String response = bot.getResponse(input);
         dialogContainer.getChildren().addAll(
             DialogBox.getUserDialog(input, userImage),
-            DialogBox.getDukeDialog(response, dukeImage)
+            DialogBox.getBotDialog(response, dukeImage)
         );
         userInput.clear();
     }

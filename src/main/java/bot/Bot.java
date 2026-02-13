@@ -1,4 +1,4 @@
-package app;
+package bot;
 
 import java.time.DateTimeException;
 import java.util.Arrays;
@@ -6,21 +6,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import bot.cheerleader.Cheerleader;
+import bot.parser.ParserTag;
+import bot.parser.RegexParser;
+import bot.storage.TaskStorage;
+import bot.task.Deadline;
+import bot.task.Event;
+import bot.task.Task;
+import bot.task.TaskIsMarkedException;
+import bot.task.TaskIsUnmarkedException;
+import bot.task.TaskList;
+import bot.task.Todo;
+
 import java.util.Scanner;
 import java.time.LocalDateTime;
 import java.io.IOException;
 
-import app.cheerleader.Cheerleader;
-import app.task.Task;
-import app.task.Deadline;
-import app.task.Event;
-import app.task.TaskIsMarkedException;
-import app.task.TaskIsUnmarkedException;
-import app.task.TaskList;
-import app.task.Todo;
-import app.parser.RegexParser;
-import app.storage.TaskStorage;
-import app.parser.ParserTag;
 import utilities.Pair;
 
 /**
@@ -30,12 +32,12 @@ import utilities.Pair;
  *
  * <p>Supported commands include: bye, list, mark, unmark, todo, deadline, event, delete.</p>
  */
-public class App {
+public class Bot {
 
     /**
      * The display name of the chatbot.
      */
-    private final String botName;
+    private final String name;
 
     /**
      * The line separator used for formatting console output.
@@ -69,11 +71,11 @@ public class App {
     /**
      * Constructs a new App instance with the specified bot name and line separator.
      *
-     * @param botName       The display name of the chatbot.
+     * @param name       The display name of the chatbot.
      * @param lineSeparator The string used to separate output lines for formatting.
      */
-    public App(String botName, String lineSeparator) {
-        this.botName = botName;
+    public Bot(String name, String lineSeparator) {
+        this.name = name;
         this.lineSeparator = lineSeparator;
     }
 
@@ -96,7 +98,7 @@ public class App {
             );
             return;
         }
-        this.printToStdOut("Hello! I'm %s!\nWhat can I do for you?".formatted(this.botName));
+        this.printToStdOut("Hello! I'm %s!\nWhat can I do for you?".formatted(this.name));
 
         while (this.isAlive) {
             if (!this.appScanner.hasNextLine()) return;
@@ -191,6 +193,10 @@ public class App {
                         Map.entry(Pattern.compile("^\\s*cheer\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.CHEER)
                 )
         );
+    }
+
+    public String getResponse(String input) {
+        return "Lil Bro heard: " + input;
     }
 
     /**

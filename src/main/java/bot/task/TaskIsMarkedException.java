@@ -1,4 +1,4 @@
-package app.task;
+package bot.task;
 
 /**
  * Exception thrown when attempting to mark a task that is already marked as completed.

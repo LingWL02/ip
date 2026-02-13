@@ -1,4 +1,4 @@
-package app.task;
+package bot.task;
 
 /**
  * Exception thrown when attempting to unmark a task that is already unmarked (not completed).

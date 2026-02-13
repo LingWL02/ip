@@ -1,4 +1,4 @@
-package app.parser;
+package bot.parser;
 
 /**
  * Exception thrown when attempting to register a regex pattern that already exists

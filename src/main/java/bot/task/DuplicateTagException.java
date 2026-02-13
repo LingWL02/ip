@@ -1,4 +1,4 @@
-package app.task;
+package bot.task;
 
 /**
  * Exception thrown when attempting to register a task class with a serialization tag
