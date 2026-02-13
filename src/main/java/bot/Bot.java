@@ -533,7 +533,7 @@ public class Bot {
         try {
             int index = Integer.parseUnsignedInt(indexString);
             int sizeAfter = this.taskList.getSize() - 1;
-            return "Deleted:\n%s\n%d %s remaining,".formatted(
+            return "Deleted:\n%s\n%d %s remaining".formatted(
                             this.taskList.pop(index).toString(), sizeAfter, (sizeAfter > 1) ? "tasks" : "task"
                     );
         } catch (IndexOutOfBoundsException exception) {
@@ -545,7 +545,7 @@ public class Bot {
             );
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             return this.formatInternalError(
-                    "An internal error occured: %s".formatted(exception.getMessage())
+                    "An internal error occurred: %s".formatted(exception.getMessage())
             );
         }
     }
