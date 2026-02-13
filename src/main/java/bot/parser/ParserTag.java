@@ -1,4 +1,4 @@
-package app.parser;
+package bot.parser;
 
 /**
  * Enumeration representing the different command types that the parser can recognize.

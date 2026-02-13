@@ -1,6 +1,11 @@
-package app.task;
+package bot.task;
 
 import org.junit.jupiter.api.Test;
+
+import bot.task.Task;
+import bot.task.TaskList;
+import bot.task.Todo;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TaskListTest {

@@ -1,4 +1,4 @@
-package app.task;
+package bot.task;
 
 /**
  * Abstract base class representing a task in the Duke chatbot application.

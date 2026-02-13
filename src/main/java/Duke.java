@@ -1,4 +1,4 @@
-import app.App;
+import bot.Bot;
 
 /**
  * Main entry point class for the Duke chatbot application.
@@ -14,7 +14,7 @@ public class Duke {
      * @param args Command-line arguments (not used).
      */
     public static void main(String[] args) {
-        App app = new App("Lil Bro", "_".repeat(50));
+        Bot app = new Bot("Duke", "_".repeat(50));
 
         app.run();
     }

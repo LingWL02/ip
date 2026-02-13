@@ -1,4 +1,4 @@
-package app.storage;
+package bot.storage;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import app.task.DuplicateTagException;
-import app.task.Task;
+import bot.task.DuplicateTagException;
+import bot.task.Task;
 
 public class TaskStorage {
     private static final String tagDelimiter = "<DELIMITER>";

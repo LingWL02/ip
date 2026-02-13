@@ -1,4 +1,4 @@
-package app.parser;
+package bot.parser;
 
 import java.util.ArrayList;
 import java.util.HashMap;

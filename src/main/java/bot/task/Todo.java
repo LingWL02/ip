@@ -1,4 +1,4 @@
-package app.task;
+package bot.task;
 
 /**
  * Represents a Todo task in the Duke chatbot application.

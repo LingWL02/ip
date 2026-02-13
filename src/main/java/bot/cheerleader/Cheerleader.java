@@ -1,4 +1,4 @@
-package app.cheerleader;
+package bot.cheerleader;
 
 import java.io.BufferedReader;
 import java.io.File;
