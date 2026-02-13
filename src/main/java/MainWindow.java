@@ -6,7 +6,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 
 
-import ui.DialogBox;
+import ui.components.DialogBox;
 
 /**
  * Controller for the main GUI.

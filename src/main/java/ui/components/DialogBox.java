@@ -1,4 +1,4 @@
-package ui;
+package ui.components;
 import java.io.IOException;
 import java.util.Collections;
 
