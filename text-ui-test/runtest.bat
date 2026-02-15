@@ -71,3 +71,4 @@ if ERRORLEVEL 1 (
     echo         All tests passed           
     echo ===================================
     exit /b 0
+)
