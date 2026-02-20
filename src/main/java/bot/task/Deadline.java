@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
  * Represents a Deadline task in the Duke chatbot application.
  * A Deadline is a task with a name and a due date/time by which it should be completed.
  *
- * <p>Serialization format: "D,name,isMarked,by,includeByTime"</p>
+ * <p>Serialization format: "D,name,isMarked,by,hasByTime"</p>
  */
 public class Deadline extends Task {
 
@@ -16,7 +16,7 @@ public class Deadline extends Task {
 
     /** The date and time by which this deadline should be completed. */
     private LocalDateTime by;
-    private Boolean includeByTime = true;
+    private Boolean hasByTime = true;
 
     /**
      * Constructs a new Deadline task with the specified name and due date/time.
@@ -37,14 +37,14 @@ public class Deadline extends Task {
      *
      * @param name the name of the task
      * @param by the deadline date and time
-     * @param includeByTime whether to include time in the deadline display
+     * @param hasByTime whether to include time in the deadline display
      */
-    public Deadline(String name, LocalDateTime by, Boolean includeByTime) {
+    public Deadline(String name, LocalDateTime by, Boolean hasByTime) {
         super(name);
         assert by != null : "Deadline date cannot be null";
-        assert includeByTime != null : "Include time flag cannot be null";
+        assert hasByTime != null : "Include time flag cannot be null";
         this.by = by;
-        this.includeByTime = includeByTime;
+        this.hasByTime = hasByTime;
     }
 
 
@@ -55,18 +55,18 @@ public class Deadline extends Task {
      * @param name              The name or description of the deadline task.
      * @param isMarkedString    String representation of the marked status ("true" or "false").
      * @param byString          String representation of the due date/time in ISO-8601 format.
-     * @param includeByTimeString String representation of whether to include time ("true" or "false").
+     * @param hasByTimeString String representation of whether to include time ("true" or "false").
      */
-    private Deadline(String name, String isMarkedString, String byString, String includeByTimeString) {
+    private Deadline(String name, String isMarkedString, String byString, String hasByTimeString) {
         super(name, isMarkedString);
         this.by = LocalDateTime.parse(byString);
-        this.includeByTime = Boolean.parseBoolean(includeByTimeString);
+        this.hasByTime = Boolean.parseBoolean(hasByTimeString);
     }
 
     /**
      * Serializes this Deadline task to a string format for persistent storage.
      *
-     * @return A serialized string in the format "D,name,isMarked,by,includeByTime".
+     * @return A serialized string in the format "D,name,isMarked,by,hasByTime".
      */
     @Override
     public String serialize() {
@@ -79,7 +79,7 @@ public class Deadline extends Task {
             + DELIMITER
             + this.by.toString()
             + DELIMITER
-            + this.includeByTime.toString()
+            + this.hasByTime.toString()
             );
     }
 
@@ -129,13 +129,13 @@ public class Deadline extends Task {
 
     /**
      * Returns the due date/time as a formatted string.
-     * If includeByTime is true, returns "MMM dd yyyy, HH:mm" format.
+     * If hasByTime is true, returns "MMM dd yyyy, HH:mm" format.
      * Otherwise, returns "MMM dd yyyy" format.
      *
      * @return A formatted string representation of the due date/time.
      */
     public String getByString() {
-        if (includeByTime) {
+        if (hasByTime) {
             return this.by.format(DateTimeFormatter.ofPattern("MMM dd yyyy, HH:mm"));
         } else {
             return this.by.format(DateTimeFormatter.ofPattern("MMM dd yyyy"));
