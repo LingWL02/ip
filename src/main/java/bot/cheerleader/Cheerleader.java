@@ -32,8 +32,9 @@ public class Cheerleader {
      * @throws IOException if an I/O error occurs
      */
     public void load() throws IOException {
-        if (!this.file.getParentFile().exists()) {
-            this.file.getParentFile().mkdirs();
+        File parentDir = this.file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
         }
         if (!this.file.createNewFile()) {
             try (BufferedReader reader = new BufferedReader(new FileReader(this.file))) {
