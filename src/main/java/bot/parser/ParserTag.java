@@ -35,4 +35,6 @@ public enum ParserTag {
     CHEER,
 
     TAG,
+
+    UNTAG,
 }

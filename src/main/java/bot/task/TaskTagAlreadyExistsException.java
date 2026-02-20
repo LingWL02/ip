@@ -13,4 +13,14 @@ public class TaskTagAlreadyExistsException extends Exception {
     public TaskTagAlreadyExistsException(String message) {
         super(message);
     }
+
+    /**
+     * Constructs a new TaskTagAlreadyExistsException with the specified detail message and cause.
+     *
+     * @param message The detail message explaining which tag already exists.
+     * @param cause   The underlying throwable that caused this exception.
+     */
+    public TaskTagAlreadyExistsException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

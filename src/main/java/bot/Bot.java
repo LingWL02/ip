@@ -70,6 +70,13 @@ public class Bot {
             (?:\\s*,\\s*[a-zA-Z0-9]+)*)?)?
             (?:\\s+(?<index>.*))?\\s*$
             """;
+    private static final String UNTAG_PATTERN = """
+            ^\\s*untag\\b
+            (?<nameFields>\\s+-names\\b
+            (?<names>\\s+[a-zA-Z0-9]+
+            (?:\\s*,\\s*[a-zA-Z0-9]+)*)?)?
+            (?:\\s+(?<index>.*))?\\s*$
+            """;
 
     /**
      * The display name of the chatbot.
@@ -213,7 +220,8 @@ public class Bot {
                         Map.entry(Pattern.compile(DELETE_PATTERN), ParserTag.DELETE),
                         Map.entry(Pattern.compile(FIND_PATTERN), ParserTag.FIND),
                         Map.entry(Pattern.compile(CHEER_PATTERN), ParserTag.CHEER),
-                        Map.entry(Pattern.compile(TAG_PATTERN, Pattern.COMMENTS), ParserTag.TAG)
+                        Map.entry(Pattern.compile(TAG_PATTERN, Pattern.COMMENTS), ParserTag.TAG),
+                        Map.entry(Pattern.compile(UNTAG_PATTERN, Pattern.COMMENTS), ParserTag.UNTAG)
                 )
         );
     }
@@ -287,6 +295,7 @@ public class Bot {
         case FIND -> this.handleFind(matcher);
         case CHEER -> this.handleCheer(matcher);
         case TAG -> this.handleTag(matcher);
+        case UNTAG -> this.handleUntag(matcher);
         default -> "TODO: Tag not implemented.";
         };
     }
@@ -642,11 +651,13 @@ public class Bot {
             return this.formatMissingFlags(expectedFormatMessage, "Command 'tag' expects flag '-names'.");
         }
         if (names == null) {
-            return this.formatIllegalFlags(expectedFormatMessage, "Command 'tag' flag '-names' expects at least one tag name.");
+            return this.formatIllegalFlags(expectedFormatMessage,
+                    "Command 'tag' flag '-names' expects at least one tag name.");
         }
         if (indexString == null) {
             return this.formatMissingArguments(expectedFormatMessage, "Command 'tag' expects argument 'index'.");
         }
+        nameFields = nameFields.strip();
         indexString = indexString.strip();
 
         String[] tagNames = names.split("\\s*,\\s*");
@@ -664,6 +675,49 @@ public class Bot {
                             .formatted(indexString)
             );
         } catch (TaskTagAlreadyExistsException exception) {
+            return this.formatIllegalFlags(expectedFormatMessage, exception.getMessage());
+        } catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            return this.formatInternalError(
+                    "An internal error occurred: %s".formatted(exception.getMessage())
+            );
+        }
+    }
+
+    private String handleUntag(Matcher matcher) {
+        String expectedFormatMessage = "untag -names <name1,name2,...> <index>";
+
+        String nameFields = matcher.group("nameFields");
+        String names = matcher.group("names");
+        String indexString = matcher.group("index");
+
+        if (nameFields == null) {
+            return this.formatMissingFlags(expectedFormatMessage, "Command 'untag' expects flag '-names'.");
+        }
+        if (names == null) {
+            return this.formatIllegalFlags(expectedFormatMessage,
+                    "Command 'untag' flag '-names' expects at least one tag name.");
+        }
+        if (indexString == null) {
+            return this.formatMissingArguments(expectedFormatMessage, "Command 'untag' expects argument 'index'.");
+        }
+        nameFields = nameFields.strip();
+        indexString = indexString.strip();
+
+        String[] tagNames = names.split("\\s*,\\s*");
+        TaskTag[] taskTags = List.of(tagNames).stream().map(TaskTag::new).toArray(TaskTag[]::new);
+        try {
+            int index = Integer.parseUnsignedInt(indexString);
+            Task task = this.taskList.removeTagsFromTask(index, taskTags);
+            return "Untagged:\n%s".formatted(task.toString());
+        } catch (IndexOutOfBoundsException exception) {
+            return this.formatDisallowed(expectedFormatMessage, exception.getMessage());
+        } catch (NumberFormatException exception) {
+            return this.formatIllegalArguments(
+                    expectedFormatMessage,
+                    "Command 'untag' expects argument 'index' to be a positive integer, got '%s'"
+                            .formatted(indexString)
+            );
+        } catch (TaskTagDoesNotExistException exception) {
             return this.formatIllegalFlags(expectedFormatMessage, exception.getMessage());
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             return this.formatInternalError(
