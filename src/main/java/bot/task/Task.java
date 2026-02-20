@@ -1,5 +1,8 @@
 package bot.task;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Abstract base class representing a task in the Duke chatbot application.
  * Tasks have a name and a marked/unmarked status indicating completion.
@@ -17,6 +20,15 @@ public abstract class Task {
 
     /** Whether the task has been marked as completed. */
     private Boolean isMarked = false;
+
+    private final List<TaskTag> taskTags = new ArrayList<>();
+
+     /**
+     * Constructs a new Task with the specified name.
+     * The task is initially unmarked (not completed).
+     *
+     * @param name The name or description of the task.
+     */
 
     /**
      * Constructs a new Task with the specified name.
@@ -117,5 +129,32 @@ public abstract class Task {
      */
     public Boolean getIsMarked() {
         return this.isMarked;
+    }
+
+    public List<TaskTag> getTaskTags() {
+        return this.taskTags;
+    }
+
+
+    public void addTaskTags(TaskTag... taskTags) {
+        assert taskTags != null : "Task tags array cannot be null";
+        for (TaskTag taskTag : taskTags) {
+            assert taskTag != null : "Task tag cannot be null";
+            if (this.taskTags.contains(taskTag)) {
+                throw new IllegalArgumentException("Task already has tag: " + taskTag);
+            }
+            this.taskTags.add(taskTag);
+        }
+    }
+
+
+    public void removeTaskTags(TaskTag... taskTags) {
+        for (TaskTag taskTag : taskTags) {
+            assert taskTag != null : "Task tag cannot be null";
+            if (!this.taskTags.contains(taskTag)) {
+                throw new IllegalArgumentException("Task does not have tag: " + taskTag);
+            }
+            this.taskTags.remove(taskTag);
+        }
     }
 }
