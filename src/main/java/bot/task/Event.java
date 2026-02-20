@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
  * Represents an Event task in the Duke chatbot application.
  * An Event is a task with a name, a start date/time, and an end date/time.
  *
- * <p>Serialization format: "E,name,isMarked,start,hasStartTime,end,hasEndTime"</p>
+ * <p>Serialization format: "E,name,isMarked,fromDateTime,hasStartTime,toDateTime,hasEndTime"</p>
  */
 public class Event extends Task {
 
@@ -15,11 +15,11 @@ public class Event extends Task {
     private static final String tag = "E";
 
     /** The start date and time of the event. */
-    private LocalDateTime start;
+    private LocalDateTime fromDateTime;
     private Boolean hasStartTime = true;
 
     /** The end date and time of the event. */
-    private LocalDateTime end;
+    private LocalDateTime toDateTime;
     private Boolean hasEndTime = true;
 
     /**
@@ -27,40 +27,42 @@ public class Event extends Task {
      * The task is initially unmarked (not completed).
      *
      * @param name  The name or description of the event.
-     * @param start The start date and time of the event.
-     * @param end   The end date and time of the event.
+     * @param fromDateTime The start date and time of the event.
+     * @param toDateTime   The end date and time of the event.
      */
-    public Event(String name, LocalDateTime start, LocalDateTime end) {
+    public Event(String name, LocalDateTime fromDateTime, LocalDateTime toDateTime) {
         super(name);
-        assert start != null : "Event start time cannot be null";
-        assert end != null : "Event end time cannot be null";
-        assert start.isBefore(end) || start.isEqual(end) : "Event start time must be before or equal to end time";
-        this.start = start;
-        this.end = end;
+        assert fromDateTime != null : "Event start time cannot be null";
+        assert toDateTime != null : "Event end time cannot be null";
+        assert fromDateTime.isBefore(toDateTime) || fromDateTime.isEqual(toDateTime)
+                : "Event start time must be before or equal to end time";
+        this.fromDateTime = fromDateTime;
+        this.toDateTime = toDateTime;
     }
 
     /**
      * Constructs an Event with detailed time inclusion settings.
      *
      * @param name the name of the event
-     * @param start the start date and time
+     * @param fromDateTime the start date and time
      * @param hasStartTime whether to include time in the start display
-     * @param end the end date and time
+     * @param toDateTime the end date and time
      * @param hasEndTime whether to include time in the end display
      */
     public Event(
-        String name, LocalDateTime start, Boolean hasStartTime,
-        LocalDateTime end, Boolean hasEndTime
+        String name, LocalDateTime fromDateTime, Boolean hasStartTime,
+        LocalDateTime toDateTime, Boolean hasEndTime
     ) {
         super(name);
-        assert start != null : "Event start time cannot be null";
-        assert end != null : "Event end time cannot be null";
+        assert fromDateTime != null : "Event start time cannot be null";
+        assert toDateTime != null : "Event end time cannot be null";
         assert hasStartTime != null : "Include start time flag cannot be null";
         assert hasEndTime != null : "Include end time flag cannot be null";
-        assert start.isBefore(end) || start.isEqual(end) : "Event start time must be before or equal to end time";
-        this.start = start;
+        assert fromDateTime.isBefore(toDateTime) || fromDateTime.isEqual(toDateTime)
+                : "Event start time must be before or equal to end time";
+        this.fromDateTime = fromDateTime;
         this.hasStartTime = hasStartTime;
-        this.end = end;
+        this.toDateTime = toDateTime;
         this.hasEndTime = hasEndTime;
     }
 
@@ -70,27 +72,27 @@ public class Event extends Task {
      *
      * @param name                   The name or description of the event.
      * @param isMarkedString         String representation of the marked status ("true" or "false").
-     * @param startString            String representation of the start date/time in ISO-8601 format.
+     * @param fromDateTimeString            String representation of the start date/time in ISO-8601 format.
      * @param hasStartTimeString String representation of whether to include start time ("true" or "false").
-     * @param endString              String representation of the end date/time in ISO-8601 format.
+     * @param toDateTimeString              String representation of the end date/time in ISO-8601 format.
      * @param hasEndTimeString   String representation of whether to include end time ("true" or "false").
      */
     private Event(
         String name, String isMarkedString,
-        String startString, String hasStartTimeString,
-        String endString, String hasEndTimeString
+        String fromDateTimeString, String hasStartTimeString,
+        String toDateTimeString, String hasEndTimeString
     ) {
         super(name, isMarkedString);
-        this.start = LocalDateTime.parse(startString);
+        this.fromDateTime = LocalDateTime.parse(fromDateTimeString);
         this.hasStartTime = Boolean.parseBoolean(hasStartTimeString);
-        this.end = LocalDateTime.parse(endString);
+        this.toDateTime = LocalDateTime.parse(toDateTimeString);
         this.hasEndTime = Boolean.parseBoolean(hasEndTimeString);
     }
 
     /**
      * Serializes this Event task to a string format for persistent storage.
      *
-     * @return A serialized string in the format "E,name,isMarked,start,hasStartTime,end,hasEndTime".
+     * @return A serialized string in the format "E,name,isMarked,fromDateTime,hasStartTime,toDateTime,hasEndTime".
      */
     @Override
     public String serialize() {
@@ -101,11 +103,11 @@ public class Event extends Task {
             + DELIMITER
             + this.getIsMarked().toString()
             + DELIMITER
-            + this.start.toString()
+            + this.fromDateTime.toString()
             + DELIMITER
             + this.hasStartTime.toString()
             + DELIMITER
-            + this.end.toString()
+            + this.toDateTime.toString()
             + DELIMITER
             + this.hasEndTime.toString()
             );
@@ -162,9 +164,9 @@ public class Event extends Task {
 
     public String getStartString() {
         if (hasStartTime) {
-            return this.start.format(DateTimeFormatter.ofPattern("MMM dd yyyy, HH:mm"));
+            return this.fromDateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy, HH:mm"));
         } else {
-            return this.start.format(DateTimeFormatter.ofPattern("MMM dd yyyy"));
+            return this.fromDateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy"));
         }
     }
 
@@ -177,9 +179,9 @@ public class Event extends Task {
      */
     public String getEndString() {
         if (hasEndTime) {
-            return this.end.format(DateTimeFormatter.ofPattern("MMM dd yyyy, HH:mm"));
+            return this.toDateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy, HH:mm"));
         } else {
-            return this.end.format(DateTimeFormatter.ofPattern("MMM dd yyyy"));
+            return this.toDateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy"));
         }
     }
 }
