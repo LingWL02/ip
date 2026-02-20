@@ -111,6 +111,13 @@ public class Bot {
         this.lineSeparator = lineSeparator;
     }
 
+    /**
+     * Constructs a new Bot instance with the specified bot name, line separator, and persistence mode.
+     *
+     * @param name The display name of the chatbot.
+     * @param lineSeperator The string used to separate output lines for formatting.
+     * @param isPersistent Whether the bot should persist data to storage.
+     */
     public Bot(String name, String lineSeperator, Boolean isPersistent) {
         this(name, lineSeperator);
         this.isPersistent = isPersistent;
