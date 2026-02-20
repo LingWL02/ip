@@ -1,5 +1,9 @@
 package bot.task;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Abstract base class representing a task in the Duke chatbot application.
  * Tasks have a name and a marked/unmarked status indicating completion.
@@ -10,13 +14,15 @@ package bot.task;
 public abstract class Task {
 
     /** Delimiter used for serializing task fields to a string. */
-    protected static final String DELIMITER = ",";
+    protected static final String DELIMITER = "<SERIALIZATION_DELIMITER>";
 
     /** The name/description of the task. */
     private final String name;
 
     /** Whether the task has been marked as completed. */
     private Boolean isMarked = false;
+
+    private final List<TaskTag> taskTags = new ArrayList<>();
 
     /**
      * Constructs a new Task with the specified name.
@@ -117,5 +123,54 @@ public abstract class Task {
      */
     public Boolean getIsMarked() {
         return this.isMarked;
+    }
+
+    public List<TaskTag> getTaskTags() {
+        return this.taskTags;
+    }
+
+    /**
+     * Adds one or more task tags to this task.
+     * Throws an exception if any of the tags already exist on this task.
+     *
+     * @param taskTags The task tags to add.
+     * @throws IllegalArgumentException If any tag already exists on this task.
+     */
+    public void addTaskTags(TaskTag... taskTags) {
+        assert taskTags != null : "Task tags array cannot be null";
+        for (TaskTag taskTag : taskTags) {
+            assert taskTag != null : "Task tag cannot be null";
+            if (this.taskTags.contains(taskTag)) {
+                throw new IllegalArgumentException("Task already has tag: " + taskTag);
+            }
+            this.taskTags.add(taskTag);
+        }
+    }
+
+    /**
+     * Removes one or more task tags from this task.
+     * Throws an exception if any of the tags do not exist on this task.
+     *
+     * @param taskTags The task tags to remove.
+     * @throws IllegalArgumentException If any tag does not exist on this task.
+     */
+    public void removeTaskTags(TaskTag... taskTags) {
+        for (TaskTag taskTag : taskTags) {
+            assert taskTag != null : "Task tag cannot be null";
+            if (!this.taskTags.contains(taskTag)) {
+                throw new IllegalArgumentException("Task does not have tag: " + taskTag);
+            }
+            this.taskTags.remove(taskTag);
+        }
+    }
+
+
+    public String getTaskTagsString() {
+        if (this.taskTags.isEmpty()) {
+            return "";
+        }
+        return this.getTaskTags().stream()
+            .map(TaskTag::toString)
+            .collect(Collectors.joining(", "));
     }
 }

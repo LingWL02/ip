@@ -124,7 +124,8 @@ public class Deadline extends Task {
      */
     @Override
     public String toString() {
-        return "[%s] %s (by %s)".formatted(getTag(), super.toString(), this.getByString());
+        return "[%s] %s (by %s) %s".formatted(getTag(), super.toString(),
+                this.getByString(), this.getTaskTagsString()).strip();
     }
 
     /**

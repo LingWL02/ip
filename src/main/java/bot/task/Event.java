@@ -156,9 +156,9 @@ public class Event extends Task {
      */
     @Override
     public String toString() {
-        return "[%s] %s (start: %s | end: %s)".formatted(
-            getTag(), super.toString(), this.getStartString(), this.getEndString()
-        );
+        return "[%s] %s (start: %s | end: %s) %s".formatted(
+            getTag(), super.toString(), this.getStartString(), this.getEndString(), this.getTaskTagsString()
+        ).strip();
     }
 
 
