@@ -42,9 +42,7 @@ public class Todo extends Task {
     @Override
     public String serialize() {
         return (
-            getTag()
-            + DELIMITER
-            + this.getName()
+            this.getName()
             + DELIMITER
             + this.getIsMarked().toString()
             + DELIMITER
@@ -62,13 +60,12 @@ public class Todo extends Task {
      */
     public static Task deserialize(String serializedTask) {
         String[] serializedParts = serializedTask.split(DELIMITER);
-        assert serializedParts.length == 4 : "Serialized Todo must have 4 parts";
-        assert serializedParts[0].equals(TAG) : "Serialized task tag must be T for Todo";
+        assert serializedParts.length == 3 : "Serialized Todo must have 3 parts";
 
         return new Todo(
+            serializedParts[0],
             serializedParts[1],
-            serializedParts[2],
-            serializedParts[3]
+            serializedParts[2]
         );
     }
 

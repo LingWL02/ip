@@ -97,9 +97,7 @@ public class Event extends Task {
     @Override
     public String serialize() {
         return (
-            getTag()
-            + DELIMITER
-            + this.getName()
+            this.getName()
             + DELIMITER
             + this.getIsMarked().toString()
             + DELIMITER
@@ -125,16 +123,15 @@ public class Event extends Task {
      */
     public static Task deserialize(String serializedTask) {
         String[] serializedParts = serializedTask.split(DELIMITER);
-        assert serializedParts.length == 8 : "Serialized Event must have 8 parts";
-        assert serializedParts[0].equals(TAG) : "Serialized task tag must be E for Event";
+        assert serializedParts.length == 7 : "Serialized Event must have 7 parts";
         return new Event(
+            serializedParts[0],
             serializedParts[1],
             serializedParts[2],
             serializedParts[3],
             serializedParts[4],
             serializedParts[5],
-            serializedParts[6],
-            serializedParts[7]
+            serializedParts[6]
         );
     }
 

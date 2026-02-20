@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public abstract class Task {
 
     /** Delimiter used for serializing task fields to a string. */
-    protected static final String DELIMITER = "<SERIALIZATION_DELIMITER>";
+    protected static final String DELIMITER = "<TASK_DELIMITER>";
 
     /** The name/description of the task. */
     private final String name;

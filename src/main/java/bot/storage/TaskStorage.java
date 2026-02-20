@@ -18,7 +18,7 @@ import bot.task.Task;
  * Handles file-based storage operations for tasks, including serialization and deserialization.
  */
 public class TaskStorage {
-    private static final String TAG_DELIMITER = "<DELIMITER>";
+    private static final String DELIMITER = "<TASK_STORAGE_DELIMITER>";
     private final File file;
     private final HashMap<String, Class<? extends Task>> deserializationTagTaskMap = new HashMap<>();
 
@@ -69,7 +69,7 @@ public class TaskStorage {
             try (BufferedReader reader = new BufferedReader(new FileReader(this.file))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    String[] tagAndSerializedTask = line.split(TAG_DELIMITER);
+                    String[] tagAndSerializedTask = line.split(DELIMITER);
                     assert tagAndSerializedTask.length == 2 : "Invalid serialized task line format";
                     String tag = tagAndSerializedTask[0];
                     String serializedTask = tagAndSerializedTask[1];
@@ -109,7 +109,7 @@ public class TaskStorage {
                     } else {
                         writer.write(
                             (String) task.getClass().getMethod("getTag").invoke(null)
-                            + TAG_DELIMITER
+                            + DELIMITER
                             + task.serialize()
                         );
                     }
@@ -172,7 +172,7 @@ public class TaskStorage {
         assert file != null : "Storage file must be initialized";
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(this.file, true))) {
             writer.write((String) task.getClass().getMethod("getTag").invoke(null)
-                    + TAG_DELIMITER + task.serialize());
+                    + DELIMITER + task.serialize());
             writer.newLine();
         }
     }

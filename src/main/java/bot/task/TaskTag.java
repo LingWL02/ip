@@ -8,7 +8,8 @@ import java.util.List;
  * Tags have a name and are displayed with a '#' prefix.
  */
 public class TaskTag {
-    private static final String DELIMITER = "<TASKTAG_DELIMITER>";
+    private static final String DELIMITER = "<TASK_TAG_DELIMITER>";
+    private static final String SENTINEL = "<NO_TAGS>";
     private String name;
 
 
@@ -30,6 +31,7 @@ public class TaskTag {
         return new ArrayList<TaskTag>(
             List.of(taskTagsString.split(DELIMITER))
             .stream()
+            .filter(tagName -> !SENTINEL.equals(tagName))
             .map(taskTagName -> new TaskTag(taskTagName))
             .toList()
         );
@@ -40,7 +42,7 @@ public class TaskTag {
         return taskTags.stream()
         .map(taskTag -> taskTag.getName())
         .reduce((acc, taskTagStr) -> acc + DELIMITER + taskTagStr)
-        .orElse("");
+        .orElse(SENTINEL);
     }
 
 

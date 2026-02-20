@@ -71,9 +71,7 @@ public class Deadline extends Task {
     @Override
     public String serialize() {
         return (
-            getTag()
-            + DELIMITER
-            + this.getName()
+            this.getName()
             + DELIMITER
             + this.getIsMarked().toString()
             + DELIMITER
@@ -95,14 +93,13 @@ public class Deadline extends Task {
      */
     public static Deadline deserialize(String serializedTask) {
         String[] serializedParts = serializedTask.split(DELIMITER);
-        assert serializedParts.length == 6 : "Serialized Deadline should have 6 parts";
-        assert serializedParts[0].equals(TAG) : "Serialized Deadline should start with tag " + TAG;
+        assert serializedParts.length == 5 : "Serialized Deadline must have at least 5 parts";
         return new Deadline(
+            serializedParts[0],
             serializedParts[1],
             serializedParts[2],
             serializedParts[3],
-            serializedParts[4],
-            serializedParts[5]
+            serializedParts[4]
         );
     }
 
