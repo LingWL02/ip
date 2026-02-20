@@ -72,6 +72,9 @@ public class Bot {
      * @param lineSeparator The string used to separate output lines for formatting.
      */
     public Bot(String name, String lineSeparator) {
+        assert name != null : "Bot name cannot be null";
+        assert !name.trim().isEmpty() : "Bot name cannot be empty";
+        assert lineSeparator != null : "Line separator cannot be null";
         this.name = name;
         this.lineSeparator = lineSeparator;
     }

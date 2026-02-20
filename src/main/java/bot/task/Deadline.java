@@ -27,6 +27,7 @@ public class Deadline extends Task {
      */
     public Deadline(String name, LocalDateTime by) {
         super(name);
+        assert by != null : "Deadline date cannot be null";
         this.by = by;
     }
 
@@ -40,6 +41,8 @@ public class Deadline extends Task {
      */
     public Deadline(String name, LocalDateTime by, Boolean includeByTime) {
         super(name);
+        assert by != null : "Deadline date cannot be null";
+        assert includeByTime != null : "Include time flag cannot be null";
         this.by = by;
         this.includeByTime = includeByTime;
     }

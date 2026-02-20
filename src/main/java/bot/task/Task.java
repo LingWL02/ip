@@ -25,6 +25,8 @@ public abstract class Task {
      * @param name The name or description of the task.
      */
     public Task(String name) {
+        assert name != null : "Task name cannot be null";
+        assert !name.trim().isEmpty() : "Task name cannot be empty or whitespace only";
         this.name = name;
     }
 
@@ -36,6 +38,9 @@ public abstract class Task {
      * @param isMarkedString String representation of the marked status ("true" or "false").
      */
     protected Task(String name, String isMarkedString) {
+        assert name != null : "Task name cannot be null";
+        assert !name.trim().isEmpty() : "Task name cannot be empty or whitespace only";
+        assert isMarkedString != null : "IsMarked string cannot be null";
         this.name = name;
         this.isMarked = Boolean.parseBoolean(isMarkedString);
     }
