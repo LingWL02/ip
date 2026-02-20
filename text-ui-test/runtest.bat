@@ -43,6 +43,7 @@ if exist ACTUAL.TXT (
 
 echo.
 echo [3/4] Compiling source files...
+:: Only compile Duke, the javac build environment with git action cant compile JavaFX (this test does not use gradle)
 javac -cp ..\src\main\java -Xlint:none -d ..\bin ..\src\main\java\Duke.java
 IF ERRORLEVEL 1 (
     echo.

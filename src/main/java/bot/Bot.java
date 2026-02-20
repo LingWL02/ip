@@ -31,6 +31,36 @@ import utilities.Pair;
  */
 public class Bot {
 
+    // Pattern constants for command parsing
+    private static final String BYE_PATTERN = "^\\s*bye\\b(?:\\s+(?<arg>.*))?\\s*$";
+    private static final String LIST_PATTERN = "^\\s*list\\b(?:\\s+(?<arg>.*))?\\s*$";
+    private static final String MARK_PATTERN = "^\\s*mark\\b(?:\\s+(?<index>.*))?\\s*$";
+    private static final String UNMARK_PATTERN = "^\\s*unmark\\b(?:\\s+(?<index>.*))?\\s*$";
+    private static final String TODO_PATTERN = "^\\s*todo\\b(?:\\s+(?<name>.*))?\\s*$";
+    private static final String DEADLINE_PATTERN = """
+            ^\\s*deadline\\b
+            (?<byField>\\s+-by\\b
+            (?<by>\\s+
+            (?<year>\\d{4})-(?<month>\\d{1,2})-(?<day>\\d{1,2})
+            (?:\\s*,\\s*(?<hour>\\d{1,2}):(?<minute>\\d{1,2}))?)?)?
+            (?:\\s+(?<name>.*))?\\s*$
+            """;
+    private static final String EVENT_PATTERN = """
+            ^\\s*event\\b
+            (?<fromField>\\s+-from\\b
+            (?<from>\\s+
+            (?<fromYear>\\d{4})-(?<fromMonth>\\d{1,2})-(?<fromDay>\\d{1,2})
+            (?:\\s*,\\s*(?<fromHour>\\d{1,2}):(?<fromMinute>\\d{1,2}))?)?)?
+            (?<toField>\\s+-to\\b
+            (?<to>\\s+
+            (?<toYear>\\d{4})-(?<toMonth>\\d{1,2})-(?<toDay>\\d{1,2})
+            (?:\\s*,\\s*(?<toHour>\\d{1,2}):(?<toMinute>\\d{1,2}))?)?)?
+            (?:\\s+(?<name>.*))?\\s*$
+            """;
+    private static final String DELETE_PATTERN = "^\\s*delete\\b(?:\\s+(?<index>.*))?\\s*$";
+    private static final String FIND_PATTERN = "^\\s*find\\b(?:\\s+(?<keyword>.*))?\\s*$";
+    private static final String CHEER_PATTERN = "^\\s*cheer\\b(?:\\s+(?<arg>.*))?\\s*$";
+
     /**
      * The display name of the chatbot.
      */
@@ -45,6 +75,8 @@ public class Bot {
      * Flag indicating whether the application is running.
      */
     private Boolean isAlive = true;
+
+    private Boolean isPersistent = true;
 
     /**
      * Scanner for reading user input from the console.
@@ -77,6 +109,18 @@ public class Bot {
         assert lineSeparator != null : "Line separator cannot be null";
         this.name = name;
         this.lineSeparator = lineSeparator;
+    }
+
+    /**
+     * Constructs a new Bot instance with the specified bot name, line separator, and persistence mode.
+     *
+     * @param name The display name of the chatbot.
+     * @param lineSeperator The string used to separate output lines for formatting.
+     * @param isPersistent Whether the bot should persist data to storage.
+     */
+    public Bot(String name, String lineSeperator, Boolean isPersistent) {
+        this(name, lineSeperator);
+        this.isPersistent = isPersistent;
     }
 
     /**
@@ -129,7 +173,9 @@ public class Bot {
      * @throws Exception If task registration or loading fails.
      */
     private void configureTaskList() throws Exception {
-        this.taskList.mountStorage(this.taskStorage);
+        if (this.isPersistent) {
+            this.taskList.mountStorage(this.taskStorage);
+        }
     }
 
 
@@ -147,38 +193,16 @@ public class Bot {
     private void configureParser() throws Exception {
         this.regexParser.addPatternTagMappings(
                 Map.ofEntries(
-                        Map.entry(Pattern.compile("^\\s*bye\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.BYE),
-                        Map.entry(Pattern.compile("^\\s*list\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.LIST),
-                        Map.entry(Pattern.compile("^\\s*mark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.MARK),
-                        Map.entry(Pattern.compile("^\\s*unmark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.UNMARK),
-                        Map.entry(Pattern.compile("^\\s*todo\\b(?:\\s+(?<name>.*))?\\s*$"), ParserTag.TODO),
-                        Map.entry(Pattern.compile(
-                                """
-                                        ^\\s*deadline\\b
-                                        (?<byField>\\s+-by\\b
-                                        (?<by>\\s+
-                                        (?<year>\\d{4})-(?<month>\\d{1,2})-(?<day>\\d{1,2})
-                                        (?:\\s*,\\s*(?<hour>\\d{1,2}):(?<minute>\\d{1,2}))?)?)?
-                                        (?:\\s+(?<name>.*))?\\s*$
-                                        """, Pattern.COMMENTS), ParserTag.DEADLINE
-                        ),
-                        Map.entry(Pattern.compile(
-                                """
-                                        ^\\s*event\\b
-                                        (?<fromField>\\s+-from\\b
-                                        (?<from>\\s+
-                                        (?<fromYear>\\d{4})-(?<fromMonth>\\d{1,2})-(?<fromDay>\\d{1,2})
-                                        (?:\\s*,\\s*(?<fromHour>\\d{1,2}):(?<fromMinute>\\d{1,2}))?)?)?
-                                        (?<toField>\\s+-to\\b
-                                        (?<to>\\s+
-                                        (?<toYear>\\d{4})-(?<toMonth>\\d{1,2})-(?<toDay>\\d{1,2})
-                                        (?:\\s*,\\s*(?<toHour>\\d{1,2}):(?<toMinute>\\d{1,2}))?)?)?
-                                        (?:\\s+(?<name>.*))?\\s*$
-                                        """, Pattern.COMMENTS), ParserTag.EVENT
-                        ),
-                        Map.entry(Pattern.compile("^\\s*delete\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.DELETE),
-                        Map.entry(Pattern.compile("^\\s*find\\b(?:\\s+(?<keyword>.*))?\\s*$"), ParserTag.FIND),
-                        Map.entry(Pattern.compile("^\\s*cheer\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.CHEER)
+                        Map.entry(Pattern.compile(BYE_PATTERN), ParserTag.BYE),
+                        Map.entry(Pattern.compile(LIST_PATTERN), ParserTag.LIST),
+                        Map.entry(Pattern.compile(MARK_PATTERN), ParserTag.MARK),
+                        Map.entry(Pattern.compile(UNMARK_PATTERN), ParserTag.UNMARK),
+                        Map.entry(Pattern.compile(TODO_PATTERN), ParserTag.TODO),
+                        Map.entry(Pattern.compile(DEADLINE_PATTERN, Pattern.COMMENTS), ParserTag.DEADLINE),
+                        Map.entry(Pattern.compile(EVENT_PATTERN, Pattern.COMMENTS), ParserTag.EVENT),
+                        Map.entry(Pattern.compile(DELETE_PATTERN), ParserTag.DELETE),
+                        Map.entry(Pattern.compile(FIND_PATTERN), ParserTag.FIND),
+                        Map.entry(Pattern.compile(CHEER_PATTERN), ParserTag.CHEER)
                 )
         );
     }
@@ -428,11 +452,11 @@ public class Bot {
         int day = Integer.parseUnsignedInt(dayString);
         int hour = (hourString == null) ? 23 : Integer.parseUnsignedInt(hourString);
         int minute = (minuteString == null) ? 59 : Integer.parseUnsignedInt(minuteString);
-        boolean includeByTime = (hourString != null && minuteString != null);
+        boolean hasByTime = (hourString != null && minuteString != null);
 
         try {
             LocalDateTime dateTime = LocalDateTime.of(year, month, day, hour, minute);
-            Deadline deadline = new Deadline(name, dateTime, includeByTime);
+            Deadline deadline = new Deadline(name, dateTime, hasByTime);
             this.taskList.add(deadline);
             return "Deadline added:\n%s".formatted(deadline.toString());
         } catch (DateTimeException exception) {
@@ -499,14 +523,14 @@ public class Bot {
         String toHourStr = matcher.group("toHour");
         String toMinStr = matcher.group("toMinute");
         int toHour = (toHourStr == null) ? 23 : Integer.parseUnsignedInt(toHourStr);
-        boolean includeStartTime = (fromHourStr != null && fromMinStr != null);
+        boolean hasStartTime = (fromHourStr != null && fromMinStr != null);
         int toMin = (toMinStr == null) ? 59 : Integer.parseUnsignedInt(toMinStr);
-        boolean includeEndTime = (toHourStr != null && toMinStr != null);
+        boolean hasEndTime = (toHourStr != null && toMinStr != null);
 
         try {
             LocalDateTime startDateTime = LocalDateTime.of(fromYear, fromMonth, fromDay, fromHour, fromMin);
             LocalDateTime endDateTime = LocalDateTime.of(toYear, toMonth, toDay, toHour, toMin);
-            Event event = new Event(name.strip(), startDateTime, includeStartTime, endDateTime, includeEndTime);
+            Event event = new Event(name.strip(), startDateTime, hasStartTime, endDateTime, hasEndTime);
             this.taskList.add(event);
             return "Event added:\n%s".formatted(event.toString());
         } catch (DateTimeException exception) {
