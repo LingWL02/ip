@@ -110,7 +110,7 @@ public class Event extends Task {
             + this.hasEndTime.toString()
             + DELIMITER
             + TaskTag.serializeTaskTags(this.getTaskTags())
-        );
+            );
     }
 
     /**

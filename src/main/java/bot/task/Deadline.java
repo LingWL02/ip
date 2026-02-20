@@ -57,7 +57,8 @@ public class Deadline extends Task {
      * @param byDateTimeString          String representation of the due date/time in ISO-8601 format.
      * @param hasByTimeString String representation of whether to include time ("true" or "false").
      */
-    private Deadline(String name, String isMarkedString, String byDateTimeString, String hasByTimeString, String taskTagsString) {
+    private Deadline(String name, String isMarkedString, String byDateTimeString,
+                    String hasByTimeString, String taskTagsString) {
         super(name, isMarkedString, taskTagsString);
         this.byDateTime = LocalDateTime.parse(byDateTimeString);
         this.hasByTime = Boolean.parseBoolean(hasByTimeString);
@@ -80,7 +81,7 @@ public class Deadline extends Task {
             + this.hasByTime.toString()
             + DELIMITER
             + TaskTag.serializeTaskTags(this.getTaskTags())
-        );
+            );
     }
 
     /**
