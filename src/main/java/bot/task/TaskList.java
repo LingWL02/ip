@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import bot.storage.TaskStorage;
 import utilities.Pair;
@@ -49,7 +51,6 @@ public class TaskList {
      */
     public void add(Task task) throws IOException, ReflectiveOperationException, SecurityException {
         assert task != null : "Task cannot be null";
-        assert taskList != null : "Task list must be initialized";
 
         if (this.storage.isPresent()) {
             TaskStorage storage = this.storage.get();
@@ -73,7 +74,6 @@ public class TaskList {
     public Task mark(int index)
             throws IndexOutOfBoundsException, TaskIsMarkedException,
                     IOException, ReflectiveOperationException, SecurityException {
-        assert taskList != null : "Task list must be initialized";
         assert taskList.size() >= 0 : "Task list size must be non-negative";
 
         if (index < 1 || index > this.taskList.size()) {
@@ -117,8 +117,6 @@ public class TaskList {
     public Task unmark(int index)
             throws IndexOutOfBoundsException, TaskIsUnmarkedException,
                     IOException, ReflectiveOperationException, SecurityException {
-        assert taskList != null : "Task list must be initialized";
-        assert taskList.size() >= 0 : "Task list size must be non-negative";
 
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
@@ -161,8 +159,6 @@ public class TaskList {
     public Task pop(int index)
             throws IndexOutOfBoundsException,
                     IOException, ReflectiveOperationException, SecurityException {
-        assert taskList != null : "Task list must be initialized";
-        assert taskList.size() >= 0 : "Task list size must be non-negative";
 
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
@@ -182,8 +178,6 @@ public class TaskList {
      * @return The size of the task list.
      */
     public int getSize() {
-        assert taskList != null : "Task list must be initialized";
-        assert taskList.size() >= 0 : "Task list size must be non-negative";
         return this.taskList.size();
     }
 
@@ -195,15 +189,18 @@ public class TaskList {
      */
     @Override
     public String toString() {
-        assert taskList != null : "Task list must be initialized";
-        StringBuilder bobTheBuilder = new StringBuilder();
+        return this.getIndexedTaskStream()
+            .map(pair -> "%d. %s".formatted(pair.getKey(), pair.getValue().toString()))
+            .reduce((acc, taskStr) -> acc + "\n" + taskStr)
+            .orElse("");
+    }
 
-        for (int i = 0; i < this.taskList.size(); i++) {
-            Task task = taskList.get(i);
-            assert task != null : "Task at index " + i + " should not be null";
-            bobTheBuilder.append("%s%d. %s".formatted((i > 0) ? "\n" : "", i + 1, task.toString()));
-        }
-        return bobTheBuilder.toString();
+    private Stream<Pair<Integer, Task>> getIndexedTaskStream() {
+        return IntStream.range(0, this.taskList.size())
+        .mapToObj(i -> new Pair<Integer, Task>(i + 1, taskList.get(i)))
+        .peek(pair -> {
+            assert pair.getValue() != null : "Task at index " + (pair.getKey()) + " should not be null";
+        });
     }
 
     /**
@@ -214,14 +211,8 @@ public class TaskList {
      */
     public List<Pair<Integer, Task>> findTasks(String keyword) {
         assert keyword != null : "Search keyword cannot be null";
-        assert taskList != null : "Task list must be initialized";
-        List<Pair<Integer, Task>> foundTasks = new ArrayList<>();
-        for (int i = 0; i < this.taskList.size(); i++) {
-            Task task = taskList.get(i);
-            if (task.getName().contains(keyword)) {
-                foundTasks.add(new Pair<>(i + 1, task));
-            }
-        }
-        return foundTasks;
+        return this.getIndexedTaskStream()
+        .filter(pair -> pair.getValue().getName().contains(keyword))
+        .toList();
     }
 }
