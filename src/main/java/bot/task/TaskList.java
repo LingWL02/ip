@@ -22,7 +22,7 @@ public class TaskList {
     private Optional<TaskStorage> storage = Optional.empty();
 
     /** The in-memory list of all tasks. */
-    private List<Task> taskList = new ArrayList<>();
+    private List<Task> taskList = new ArrayList<Task>();
 
     /**
      * Mounts a storage system for persistent task management.
@@ -73,7 +73,6 @@ public class TaskList {
     public Task mark(int index)
             throws IndexOutOfBoundsException, TaskIsMarkedException,
                     IOException, ReflectiveOperationException, SecurityException {
-        assert index > 0 : "Index must be positive (1-based indexing)";
         assert taskList != null : "Task list must be initialized";
         assert taskList.size() >= 0 : "Task list size must be non-negative";
 
@@ -118,7 +117,6 @@ public class TaskList {
     public Task unmark(int index)
             throws IndexOutOfBoundsException, TaskIsUnmarkedException,
                     IOException, ReflectiveOperationException, SecurityException {
-        assert index > 0 : "Index must be positive (1-based indexing)";
         assert taskList != null : "Task list must be initialized";
         assert taskList.size() >= 0 : "Task list size must be non-negative";
 
@@ -163,7 +161,6 @@ public class TaskList {
     public Task pop(int index)
             throws IndexOutOfBoundsException,
                     IOException, ReflectiveOperationException, SecurityException {
-        assert index > 0 : "Index must be positive (1-based indexing)";
         assert taskList != null : "Task list must be initialized";
         assert taskList.size() >= 0 : "Task list size must be non-negative";
 

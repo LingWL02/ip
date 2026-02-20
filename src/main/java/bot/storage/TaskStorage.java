@@ -70,14 +70,10 @@ public class TaskStorage {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String[] tagAndSerializedTask = line.split(tagDelimiter);
-                    if (tagAndSerializedTask.length != 2) {
-                        continue; // TODO: Handle invalid serialized task line
-                    }
+                    assert tagAndSerializedTask.length == 2 : "Invalid serialized task line format";
                     String tag = tagAndSerializedTask[0];
                     String serializedTask = tagAndSerializedTask[1];
-                    if (!this.deserializationTagTaskMap.containsKey(tag)) {
-                        continue; // TODO: Handle unknown deserialization tag
-                    }
+                    assert this.deserializationTagTaskMap.containsKey(tag) : "Unknown deserialization tag: " + tag;
 
                     Class<? extends Task> taskClass = this.deserializationTagTaskMap.get(tag);
                     Method deserializeMethod = taskClass.getMethod("deserialize", String.class);
