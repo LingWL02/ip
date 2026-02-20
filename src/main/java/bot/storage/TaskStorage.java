@@ -28,6 +28,8 @@ public class TaskStorage {
      * @param filePath the path to the storage file
      */
     public TaskStorage(String filePath) {
+        assert filePath != null : "File path cannot be null";
+        assert !filePath.trim().isEmpty() : "File path cannot be empty";
         this.file = new File(filePath);
     }
 
@@ -42,7 +44,9 @@ public class TaskStorage {
     public void subscribeTaskDeserialization(
         Class<? extends Task>... taskClasses
     ) throws DuplicateTagException, ReflectiveOperationException, SecurityException {
+        assert taskClasses != null : "Task classes array cannot be null";
         for (Class<? extends Task> taskClass : taskClasses) {
+            assert taskClass != null : "Task class cannot be null";
             String tag = (String) taskClass.getMethod("getTag").invoke(null);
 
             if (this.deserializationTagTaskMap.containsKey(tag)) {
@@ -66,14 +70,10 @@ public class TaskStorage {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String[] tagAndSerializedTask = line.split(tagDelimiter);
-                    if (tagAndSerializedTask.length != 2) {
-                        continue; // TODO: Handle invalid serialized task line
-                    }
+                    assert tagAndSerializedTask.length == 2 : "Invalid serialized task line format";
                     String tag = tagAndSerializedTask[0];
                     String serializedTask = tagAndSerializedTask[1];
-                    if (!this.deserializationTagTaskMap.containsKey(tag)) {
-                        continue; // TODO: Handle unknown deserialization tag
-                    }
+                    assert this.deserializationTagTaskMap.containsKey(tag) : "Unknown deserialization tag: " + tag;
 
                     Class<? extends Task> taskClass = this.deserializationTagTaskMap.get(tag);
                     Method deserializeMethod = taskClass.getMethod("deserialize", String.class);
@@ -89,6 +89,11 @@ public class TaskStorage {
 
     private void modifyOrDeleteFromStorage(int index, Task task, boolean delete)
             throws IOException, ReflectiveOperationException, SecurityException {
+        assert index >= 0 : "Index must be non-negative";
+        assert file != null : "Storage file must be initialized";
+        assert !delete || task == null : "Task must be null when deleting";
+        assert delete || task != null : "Task must not be null when modifying";
+
         File parentDir = this.file.getParentFile();
         File tempFile = File.createTempFile("temp", ".tmp", parentDir);
         try (
@@ -123,13 +128,33 @@ public class TaskStorage {
     }
 
 
+    /**
+     * Modifies a task at the specified index in the storage file.
+     *
+     * @param index the index of the task to modify (must be non-negative)
+     * @param task the new task to replace the existing task at the given index
+     * @throws IOException if an I/O error occurs while writing to the storage file
+     * @throws ReflectiveOperationException if reflection fails during task processing
+     * @throws SecurityException if security restrictions prevent the operation
+     */
     public void modify(int index, Task task)
             throws IOException, ReflectiveOperationException, SecurityException {
+        assert index >= 0 : "Index must be non-negative";
+        assert task != null : "Task cannot be null for modification";
         modifyOrDeleteFromStorage(index, task, false);
     }
 
+    /**
+     * Removes a task at the specified index from the storage file.
+     *
+     * @param index the index of the task to remove (must be non-negative)
+     * @throws IOException if an I/O error occurs while writing to the storage file
+     * @throws ReflectiveOperationException if reflection fails during task processing
+     * @throws SecurityException if security restrictions prevent the operation
+     */
     public void remove(int index)
             throws IOException, ReflectiveOperationException, SecurityException {
+        assert index >= 0 : "Index must be non-negative";
         modifyOrDeleteFromStorage(index, null, true);
     }
 
@@ -143,6 +168,8 @@ public class TaskStorage {
      */
     public void add(Task task)
             throws IOException, ReflectiveOperationException, SecurityException {
+        assert task != null : "Task cannot be null";
+        assert file != null : "Storage file must be initialized";
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(this.file, true))) {
             writer.write((String) task.getClass().getMethod("getTag").invoke(null)
                     + tagDelimiter + task.serialize());

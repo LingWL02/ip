@@ -32,6 +32,9 @@ public class Event extends Task {
      */
     public Event(String name, LocalDateTime start, LocalDateTime end) {
         super(name);
+        assert start != null : "Event start time cannot be null";
+        assert end != null : "Event end time cannot be null";
+        assert start.isBefore(end) || start.isEqual(end) : "Event start time must be before or equal to end time";
         this.start = start;
         this.end = end;
     }
@@ -50,6 +53,11 @@ public class Event extends Task {
         LocalDateTime end, Boolean includeEndTime
     ) {
         super(name);
+        assert start != null : "Event start time cannot be null";
+        assert end != null : "Event end time cannot be null";
+        assert includeStartTime != null : "Include start time flag cannot be null";
+        assert includeEndTime != null : "Include end time flag cannot be null";
+        assert start.isBefore(end) || start.isEqual(end) : "Event start time must be before or equal to end time";
         this.start = start;
         this.includeStartTime = includeStartTime;
         this.end = end;

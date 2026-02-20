@@ -19,6 +19,8 @@ public class Todo extends Task {
      */
     public Todo(String name) {
         super(name);
+        assert name != null : "Todo name cannot be null";
+        assert !name.trim().isEmpty() : "Todo name cannot be empty";
     }
 
     /**

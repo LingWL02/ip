@@ -22,6 +22,8 @@ public class Pair<K, V> {
      * @param value The value (second element) of the pair.
      */
     public Pair(K key, V value) {
+        assert key != null : "Pair key cannot be null";
+        assert value != null : "Pair value cannot be null";
         this.key = key;
         this.value = value;
     }

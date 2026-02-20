@@ -29,9 +29,13 @@ public class RegexParser<T> {
      * @throws DuplicatePatternException If any pattern already exists in the parser's mappings.
      */
     public void addPatternTagMappings(Map<Pattern, T> patternTagMappings) throws DuplicatePatternException {
+        assert patternTagMappings != null : "Pattern-tag mappings cannot be null";
         for (Map.Entry<Pattern, T> patternTagMapping : patternTagMappings.entrySet()) {
             Pattern pattern = patternTagMapping.getKey();
             T tag = patternTagMapping.getValue();
+
+            assert pattern != null : "Pattern cannot be null";
+            assert tag != null : "Tag cannot be null";
 
             if (this.patternTagMappings.containsKey(pattern)) {
                 throw new DuplicatePatternException(
@@ -52,6 +56,7 @@ public class RegexParser<T> {
      *         May return multiple pairs if the input matches multiple patterns.
      */
     public List<Pair<T, Matcher>> parse(String inputString) {
+        assert inputString != null : "Input string cannot be null";
         String normalizedString = inputString.strip();
         ArrayList<Pair<T, Matcher>> results = new ArrayList<Pair<T, Matcher>>();
         for (Map.Entry<Pattern, T> patternTagMapping : this.patternTagMappings.entrySet()) {

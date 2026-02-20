@@ -22,7 +22,7 @@ public class TaskList {
     private Optional<TaskStorage> storage = Optional.empty();
 
     /** The in-memory list of all tasks. */
-    private List<Task> taskList = new ArrayList<>();
+    private List<Task> taskList = new ArrayList<Task>();
 
     /**
      * Mounts a storage system for persistent task management.
@@ -48,6 +48,9 @@ public class TaskList {
      * @throws SecurityException if security restrictions apply
      */
     public void add(Task task) throws IOException, ReflectiveOperationException, SecurityException {
+        assert task != null : "Task cannot be null";
+        assert taskList != null : "Task list must be initialized";
+
         if (this.storage.isPresent()) {
             TaskStorage storage = this.storage.get();
             storage.add(task);
@@ -70,12 +73,17 @@ public class TaskList {
     public Task mark(int index)
             throws IndexOutOfBoundsException, TaskIsMarkedException,
                     IOException, ReflectiveOperationException, SecurityException {
+        assert taskList != null : "Task list must be initialized";
+        assert taskList.size() >= 0 : "Task list size must be non-negative";
+
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
             );
         }
         Task task = this.taskList.get(index - 1);
+        assert task != null : "Task at index " + (index - 1) + " should not be null";
+
         if (task.getIsMarked()) {
             throw new TaskIsMarkedException(
                 "%s has already been marked.".formatted(task.toString())
@@ -109,12 +117,16 @@ public class TaskList {
     public Task unmark(int index)
             throws IndexOutOfBoundsException, TaskIsUnmarkedException,
                     IOException, ReflectiveOperationException, SecurityException {
+        assert taskList != null : "Task list must be initialized";
+        assert taskList.size() >= 0 : "Task list size must be non-negative";
+
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
             );
         }
         Task task = this.taskList.get(index - 1);
+        assert task != null : "Task at index " + (index - 1) + " should not be null";
 
         if (!task.getIsMarked()) {
             throw new TaskIsUnmarkedException(
@@ -149,6 +161,9 @@ public class TaskList {
     public Task pop(int index)
             throws IndexOutOfBoundsException,
                     IOException, ReflectiveOperationException, SecurityException {
+        assert taskList != null : "Task list must be initialized";
+        assert taskList.size() >= 0 : "Task list size must be non-negative";
+
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
@@ -167,6 +182,8 @@ public class TaskList {
      * @return The size of the task list.
      */
     public int getSize() {
+        assert taskList != null : "Task list must be initialized";
+        assert taskList.size() >= 0 : "Task list size must be non-negative";
         return this.taskList.size();
     }
 
@@ -178,10 +195,12 @@ public class TaskList {
      */
     @Override
     public String toString() {
+        assert taskList != null : "Task list must be initialized";
         StringBuilder bobTheBuilder = new StringBuilder();
 
         for (int i = 0; i < this.taskList.size(); i++) {
             Task task = taskList.get(i);
+            assert task != null : "Task at index " + i + " should not be null";
             bobTheBuilder.append("%s%d. %s".formatted((i > 0) ? "\n" : "", i + 1, task.toString()));
         }
         return bobTheBuilder.toString();
@@ -194,6 +213,8 @@ public class TaskList {
      * @return a list of pairs containing 1-based indices and matching tasks
      */
     public List<Pair<Integer, Task>> findTasks(String keyword) {
+        assert keyword != null : "Search keyword cannot be null";
+        assert taskList != null : "Task list must be initialized";
         List<Pair<Integer, Task>> foundTasks = new ArrayList<>();
         for (int i = 0; i < this.taskList.size(); i++) {
             Task task = taskList.get(i);
