@@ -82,7 +82,6 @@ public class TaskList {
             );
         }
         Task task = this.taskList.get(index - 1);
-        assert task != null : "Task at index " + (index - 1) + " should not be null";
 
         if (task.getIsMarked()) {
             throw new TaskIsMarkedException(
@@ -124,7 +123,6 @@ public class TaskList {
             );
         }
         Task task = this.taskList.get(index - 1);
-        assert task != null : "Task at index " + (index - 1) + " should not be null";
 
         if (!task.getIsMarked()) {
             throw new TaskIsUnmarkedException(
@@ -214,5 +212,79 @@ public class TaskList {
         return this.getIndexedTaskStream()
         .filter(pair -> pair.getValue().getName().contains(keyword))
         .toList();
+    }
+
+
+    private Task modifyTagsOnTask(int index, boolean addTaskTag, TaskTag... taskTags)
+            throws IndexOutOfBoundsException, IOException, ReflectiveOperationException,
+            SecurityException, TaskTagAlreadyExistsException, TaskTagDoesNotExistException {
+        if (index < 1 || index > this.taskList.size()) {
+            throw new IndexOutOfBoundsException(
+                "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
+            );
+        }
+        Task task = this.taskList.get(index - 1);
+
+        if (addTaskTag) {
+            task.addTaskTags(taskTags);
+        } else {
+            task.removeTaskTags(taskTags);
+        }
+
+        if (this.storage.isPresent()) {
+            TaskStorage storage = this.storage.get();
+            storage.modify(index - 1, task);
+        }
+        return task;
+    }
+
+    /**
+     * Adds one or more tags to a task at the specified index.
+     *
+     * @param index The 1-based index of the task to add tags to.
+     * @param taskTags The tags to add to the task.
+     * @return The modified task.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     * @throws IOException If an error occurs during storage operations.
+     * @throws ReflectiveOperationException If an error occurs during reflection operations.
+     * @throws SecurityException If a security violation occurs.
+     * @throws TaskTagAlreadyExistsException If any of the tags already exist on the task.
+     */
+    public Task addTagsToTask(int index, TaskTag... taskTags)
+            throws IndexOutOfBoundsException, IOException, ReflectiveOperationException,
+            SecurityException, TaskTagAlreadyExistsException {
+        assert taskTags != null : "Task tags array cannot be null";
+
+        try {
+            return this.modifyTagsOnTask(index, true, taskTags);
+        } catch (TaskTagDoesNotExistException exception) {
+            throw new RuntimeException(
+                    "Unexpected TaskTagDoesNotExistException when adding tags to task", exception);
+        }
+    }
+
+    /**
+     * Removes one or more tags from a task at the specified index.
+     *
+     * @param index The 1-based index of the task to remove tags from.
+     * @param taskTags The tags to remove from the task.
+     * @return The modified task.
+     * @throws IndexOutOfBoundsException If the index is out of bounds.
+     * @throws IOException If an error occurs during storage operations.
+     * @throws ReflectiveOperationException If an error occurs during reflection operations.
+     * @throws SecurityException If a security violation occurs.
+     * @throws TaskTagDoesNotExistException If any of the tags do not exist on the task.
+     */
+    public Task removeTagsFromTask(int index, TaskTag... taskTags)
+            throws IndexOutOfBoundsException, IOException, ReflectiveOperationException,
+            SecurityException, TaskTagDoesNotExistException {
+        assert taskTags != null : "Task tags array cannot be null";
+
+        try {
+            return this.modifyTagsOnTask(index, false, taskTags);
+        } catch (TaskTagAlreadyExistsException exception) {
+            throw new RuntimeException(
+                    "Unexpected TaskTagAlreadyExistsException when removing tags from task", exception);
+        }
     }
 }

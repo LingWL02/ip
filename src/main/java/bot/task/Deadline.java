@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 public class Deadline extends Task {
 
     /** The tag identifier used for serialization and deserialization. */
-    private static final String tag = "D";
+    private static final String TAG = "D";
 
     /** The date and time by which this deadline should be completed. */
     private LocalDateTime byDateTime;
@@ -57,8 +57,9 @@ public class Deadline extends Task {
      * @param byDateTimeString          String representation of the due date/time in ISO-8601 format.
      * @param hasByTimeString String representation of whether to include time ("true" or "false").
      */
-    private Deadline(String name, String isMarkedString, String byDateTimeString, String hasByTimeString) {
-        super(name, isMarkedString);
+    private Deadline(String name, String isMarkedString, String byDateTimeString,
+                    String hasByTimeString, String taskTagsString) {
+        super(name, isMarkedString, taskTagsString);
         this.byDateTime = LocalDateTime.parse(byDateTimeString);
         this.hasByTime = Boolean.parseBoolean(hasByTimeString);
     }
@@ -71,15 +72,15 @@ public class Deadline extends Task {
     @Override
     public String serialize() {
         return (
-            getTag()
-            + DELIMITER
-            + this.getName()
+            this.getName()
             + DELIMITER
             + this.getIsMarked().toString()
             + DELIMITER
             + this.byDateTime.toString()
             + DELIMITER
             + this.hasByTime.toString()
+            + DELIMITER
+            + TaskTag.serializeTaskTags(this.getTaskTags())
             );
     }
 
@@ -93,13 +94,9 @@ public class Deadline extends Task {
      */
     public static Deadline deserialize(String serializedTask) {
         String[] serializedParts = serializedTask.split(DELIMITER);
-        if (serializedParts.length != 5) {
-            throw new RuntimeException(); // TODO
-        }
-        if (!serializedParts[0].equals(tag)) {
-            throw new RuntimeException(); // TODO
-        }
+        assert serializedParts.length == 5 : "Serialized Deadline must have at least 5 parts";
         return new Deadline(
+            serializedParts[0],
             serializedParts[1],
             serializedParts[2],
             serializedParts[3],
@@ -113,7 +110,7 @@ public class Deadline extends Task {
      * @return The tag string "D".
      */
     public static String getTag() {
-        return tag;
+        return TAG;
     }
 
     /**

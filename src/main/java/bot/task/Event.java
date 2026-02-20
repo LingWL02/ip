@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 public class Event extends Task {
 
     /** The tag identifier used for serialization and deserialization. */
-    private static final String tag = "E";
+    private static final String TAG = "E";
 
     /** The start date and time of the event. */
     private LocalDateTime fromDateTime;
@@ -80,9 +80,9 @@ public class Event extends Task {
     private Event(
         String name, String isMarkedString,
         String fromDateTimeString, String hasStartTimeString,
-        String toDateTimeString, String hasEndTimeString
+        String toDateTimeString, String hasEndTimeString, String taskTagsString
     ) {
-        super(name, isMarkedString);
+        super(name, isMarkedString, taskTagsString);
         this.fromDateTime = LocalDateTime.parse(fromDateTimeString);
         this.hasStartTime = Boolean.parseBoolean(hasStartTimeString);
         this.toDateTime = LocalDateTime.parse(toDateTimeString);
@@ -97,9 +97,7 @@ public class Event extends Task {
     @Override
     public String serialize() {
         return (
-            getTag()
-            + DELIMITER
-            + this.getName()
+            this.getName()
             + DELIMITER
             + this.getIsMarked().toString()
             + DELIMITER
@@ -110,6 +108,8 @@ public class Event extends Task {
             + this.toDateTime.toString()
             + DELIMITER
             + this.hasEndTime.toString()
+            + DELIMITER
+            + TaskTag.serializeTaskTags(this.getTaskTags())
             );
     }
 
@@ -123,13 +123,9 @@ public class Event extends Task {
      */
     public static Task deserialize(String serializedTask) {
         String[] serializedParts = serializedTask.split(DELIMITER);
-        if (serializedParts.length != 7) {
-            throw new RuntimeException(); // TODO
-        }
-        if (!serializedParts[0].equals(tag)) {
-            throw new RuntimeException(); // TODO
-        }
+        assert serializedParts.length == 7 : "Serialized Event must have 7 parts";
         return new Event(
+            serializedParts[0],
             serializedParts[1],
             serializedParts[2],
             serializedParts[3],
@@ -145,7 +141,7 @@ public class Event extends Task {
      * @return The tag string "E".
      */
     public static String getTag() {
-        return tag;
+        return TAG;
     }
 
     /**
