@@ -32,5 +32,7 @@ public enum ParserTag {
 
     FIND,
 
-    CHEER
+    CHEER,
+
+    TAG,
 }

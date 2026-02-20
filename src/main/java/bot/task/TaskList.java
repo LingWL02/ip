@@ -82,7 +82,6 @@ public class TaskList {
             );
         }
         Task task = this.taskList.get(index - 1);
-        assert task != null : "Task at index " + (index - 1) + " should not be null";
 
         if (task.getIsMarked()) {
             throw new TaskIsMarkedException(
@@ -124,7 +123,6 @@ public class TaskList {
             );
         }
         Task task = this.taskList.get(index - 1);
-        assert task != null : "Task at index " + (index - 1) + " should not be null";
 
         if (!task.getIsMarked()) {
             throw new TaskIsUnmarkedException(
@@ -214,5 +212,45 @@ public class TaskList {
         return this.getIndexedTaskStream()
         .filter(pair -> pair.getValue().getName().contains(keyword))
         .toList();
+    }
+
+
+    private Task modifyTagsOnTask(int index, boolean addTaskTag, TaskTag... taskTags)
+        throws IndexOutOfBoundsException, IOException, ReflectiveOperationException, SecurityException {
+
+        if (index < 1 || index > this.taskList.size()) {
+            throw new IndexOutOfBoundsException(
+                "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
+            );
+        }
+        Task task = this.taskList.get(index - 1);
+
+        if (addTaskTag) {
+            task.addTaskTags(taskTags);
+        } else {
+            task.removeTaskTags(taskTags);
+        }
+
+        if (this.storage.isPresent()) {
+            TaskStorage storage = this.storage.get();
+            storage.modify(index - 1, task);
+        }
+        return task;
+    }
+
+
+    public Task addTagsToTask(int index, TaskTag... taskTags)
+        throws IndexOutOfBoundsException, IOException, ReflectiveOperationException, SecurityException {
+        assert taskTags != null : "Task tags array cannot be null";
+
+        return this.modifyTagsOnTask(index, true, taskTags);
+    }
+
+
+    public Task removeTagsFromTask(int index, TaskTag... taskTags)
+        throws IndexOutOfBoundsException, IOException, ReflectiveOperationException, SecurityException {
+        assert taskTags != null : "Task tags array cannot be null";
+
+        return this.modifyTagsOnTask(index, false, taskTags);
     }
 }

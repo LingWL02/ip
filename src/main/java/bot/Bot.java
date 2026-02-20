@@ -60,6 +60,13 @@ public class Bot {
     private static final String DELETE_PATTERN = "^\\s*delete\\b(?:\\s+(?<index>.*))?\\s*$";
     private static final String FIND_PATTERN = "^\\s*find\\b(?:\\s+(?<keyword>.*))?\\s*$";
     private static final String CHEER_PATTERN = "^\\s*cheer\\b(?:\\s+(?<arg>.*))?\\s*$";
+    private static final String TAG_PATTERN = """
+            ^\\s*tag\\b
+            (?<nameFields>\\s+-names\\b
+            (?<names>\\s+[a-zA-Z0-9]+
+            (?:\\s*,\\s*[a-zA-Z0-9]+)*)?)?
+            (?:\\s+(?<index>.*))?\\s*$
+            """;
 
     /**
      * The display name of the chatbot.
@@ -202,7 +209,8 @@ public class Bot {
                         Map.entry(Pattern.compile(EVENT_PATTERN, Pattern.COMMENTS), ParserTag.EVENT),
                         Map.entry(Pattern.compile(DELETE_PATTERN), ParserTag.DELETE),
                         Map.entry(Pattern.compile(FIND_PATTERN), ParserTag.FIND),
-                        Map.entry(Pattern.compile(CHEER_PATTERN), ParserTag.CHEER)
+                        Map.entry(Pattern.compile(CHEER_PATTERN), ParserTag.CHEER),
+                        Map.entry(Pattern.compile(TAG_PATTERN, Pattern.COMMENTS), ParserTag.TAG)
                 )
         );
     }
@@ -275,6 +283,7 @@ public class Bot {
         case DELETE -> this.handleDelete(matcher);
         case FIND -> this.handleFind(matcher);
         case CHEER -> this.handleCheer(matcher);
+        case TAG -> this.handleTag(matcher);
         default -> "TODO: Tag not implemented.";
         };
     }
@@ -618,6 +627,38 @@ public class Bot {
         }
     }
 
+
+    private String handleTag(Matcher matcher) {
+        String expectedFormatMessage = "tag -names <name1,name2,...> <index>";
+
+        String nameFields = matcher.group("nameFields");
+        String names = matcher.group("names");
+        String indexString = matcher.group("index");
+
+        if (nameFields == null) {
+            return this.formatMissingFlags(expectedFormatMessage, "Command 'tag' expects flag '-names'.");
+        }
+        if (names == null) {
+            return this.formatIllegalFlags(expectedFormatMessage, "Command 'tag' flag '-names' expects at least one tag name.");
+        }
+        if (indexString == null) {
+            return this.formatMissingArguments(expectedFormatMessage, "Command 'tag' expects argument 'index'.");
+        }
+        indexString = indexString.strip();
+
+        String[] tagNames = names.split("\\s*,\\s*");
+        try {
+            int index = Integer.parseUnsignedInt(indexString);
+        } catch (NumberFormatException exception) {
+            return this.formatIllegalArguments(
+                    expectedFormatMessage,
+                    "Command 'tag' expects argument 'index' to be a positive integer, got '%s'"
+                            .formatted(indexString)
+            );
+        }
+
+        return "";
+    }
 
     /**
      * Formats an error message for illegal arguments.
