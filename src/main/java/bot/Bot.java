@@ -46,6 +46,8 @@ public class Bot {
      */
     private Boolean isAlive = true;
 
+    private Boolean isPersistent = true;
+
     /**
      * Scanner for reading user input from the console.
      */
@@ -77,6 +79,11 @@ public class Bot {
         assert lineSeparator != null : "Line separator cannot be null";
         this.name = name;
         this.lineSeparator = lineSeparator;
+    }
+
+    public Bot(String name, String lineSeperator, Boolean isPersistent) {
+        this(name, lineSeperator);
+        this.isPersistent = isPersistent;
     }
 
     /**
@@ -129,7 +136,9 @@ public class Bot {
      * @throws Exception If task registration or loading fails.
      */
     private void configureTaskList() throws Exception {
-        this.taskList.mountStorage(this.taskStorage);
+        if (this.isPersistent) {
+            this.taskList.mountStorage(this.taskStorage);
+        }
     }
 
 
