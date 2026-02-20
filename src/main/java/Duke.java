@@ -14,7 +14,7 @@ public class Duke {
      * @param args Command-line arguments (not used).
      */
     public static void main(String[] args) {
-        Bot app = new Bot("Duke", "_".repeat(50));
+        Bot app = new Bot("Lil Bro", "_".repeat(50));
 
         app.run();
     }

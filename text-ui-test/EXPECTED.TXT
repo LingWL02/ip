@@ -42,7 +42,7 @@ __________________________________________________
 
 Deleted:
 [E] [ ] Workshop (start: Feb 01 2026, 09:00 | end: Feb 01 2026, 17:00)
-2 tasks remaining,
+2 tasks remaining
 __________________________________________________
 
 Task List:
@@ -82,12 +82,14 @@ EXPECTED FORMAT: deadline -by <year>-<month>-<day>[,<hour>:<minute>] <name>
 ILLEGAL ARGUMENTS: Invalid value for MonthOfYear (valid values 1 - 12): 13
 __________________________________________________
 
-EXPECTED FORMAT: event -from <year>-<month>-<day>[,<hour>:<minute>] -to <year>-<month>-<day>[,<hour>:<minute>] <name>
+EXPECTED FORMAT: event -from <year>-<month>-<day>[,<hour>:<minute>]
+        -to <year>-<month>-<day>[,<hour>:<minute>] <name>
 
 MISSING FLAGS: Command 'event' expects flag '-to'.
 __________________________________________________
 
-EXPECTED FORMAT: event -from <year>-<month>-<day>[,<hour>:<minute>] -to <year>-<month>-<day>[,<hour>:<minute>] <name>
+EXPECTED FORMAT: event -from <year>-<month>-<day>[,<hour>:<minute>]
+        -to <year>-<month>-<day>[,<hour>:<minute>] <name>
 
 MISSING ARGUMENTS: Command 'event' expects argument 'name'.
 __________________________________________________

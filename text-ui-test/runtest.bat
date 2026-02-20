@@ -2,7 +2,7 @@
 chcp 65001 > nul
 
 echo ===============================================
-echo                Duke Test Runner                
+echo                Duke Test Runner
 echo ===============================================
 echo.
 
@@ -43,11 +43,11 @@ if exist ACTUAL.TXT (
 
 echo.
 echo [3/4] Compiling source files...
-javac -cp ..\src\main\java -Xlint:none -d ..\bin ..\src\main\java\*.java
+javac -cp ..\src\main\java -Xlint:none -d ..\bin ..\src\main\java\Duke.java
 IF ERRORLEVEL 1 (
     echo.
     echo =============== ERROR ===============
-    echo         BUILD FAILURE              
+    echo         BUILD FAILURE
     echo ===================================
     exit /b 1
 )
@@ -62,13 +62,13 @@ FC ACTUAL.TXT EXPECTED.TXT > nul
 if ERRORLEVEL 1 (
     echo.
     echo =============== ERROR ===============
-    echo           Tests FAILED             
+    echo           Tests FAILED
     echo ===================================
     exit /b 1
 ) else (
     echo.
     echo ============= SUCCESS ==============
-    echo         All tests passed           
+    echo         All tests passed
     echo ===================================
     exit /b 0
 )

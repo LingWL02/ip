@@ -57,8 +57,9 @@ public class TaskStorage {
 
     public List<Task> getTasks() throws IOException, ReflectiveOperationException, SecurityException {
         ArrayList<Task> taskList = new ArrayList<Task>();
-        if (!this.file.getParentFile().exists()) {
-            this.file.getParentFile().mkdirs();
+        File parentDir = this.file.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
         }
         if (!this.file.createNewFile()) {
             try (BufferedReader reader = new BufferedReader(new FileReader(this.file))) {
@@ -88,7 +89,8 @@ public class TaskStorage {
 
     private void modifyOrDeleteFromStorage(int index, Task task, boolean delete)
             throws IOException, ReflectiveOperationException, SecurityException {
-        File tempFile = File.createTempFile("temp", ".tmp", this.file.getParentFile());
+        File parentDir = this.file.getParentFile();
+        File tempFile = File.createTempFile("temp", ".tmp", parentDir);
         try (
             BufferedReader reader = new BufferedReader(new FileReader(this.file));
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))
