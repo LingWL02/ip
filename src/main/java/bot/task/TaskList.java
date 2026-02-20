@@ -216,8 +216,8 @@ public class TaskList {
 
 
     private Task modifyTagsOnTask(int index, boolean addTaskTag, TaskTag... taskTags)
-        throws IndexOutOfBoundsException, IOException, ReflectiveOperationException, SecurityException {
-
+        throws IndexOutOfBoundsException, IOException, ReflectiveOperationException,
+        SecurityException, TaskTagAlreadyExistsException, TaskTagDoesNotExistException {
         if (index < 1 || index > this.taskList.size()) {
             throw new IndexOutOfBoundsException(
                 "Index %d is out of bounds of Task List of size %d.".formatted(index, this.taskList.size())
@@ -240,17 +240,27 @@ public class TaskList {
 
 
     public Task addTagsToTask(int index, TaskTag... taskTags)
-        throws IndexOutOfBoundsException, IOException, ReflectiveOperationException, SecurityException {
+        throws IndexOutOfBoundsException, IOException, ReflectiveOperationException,
+        SecurityException, TaskTagAlreadyExistsException {
         assert taskTags != null : "Task tags array cannot be null";
 
-        return this.modifyTagsOnTask(index, true, taskTags);
+        try {
+            return this.modifyTagsOnTask(index, true, taskTags);
+        } catch (TaskTagDoesNotExistException exception) {
+            throw new RuntimeException("Unexpected TaskTagDoesNotExistException when adding tags to task", exception);
+        }
     }
 
 
     public Task removeTagsFromTask(int index, TaskTag... taskTags)
-        throws IndexOutOfBoundsException, IOException, ReflectiveOperationException, SecurityException {
+        throws IndexOutOfBoundsException, IOException, ReflectiveOperationException,
+        SecurityException, TaskTagDoesNotExistException {
         assert taskTags != null : "Task tags array cannot be null";
 
-        return this.modifyTagsOnTask(index, false, taskTags);
+        try {
+            return this.modifyTagsOnTask(index, false, taskTags);
+        } catch (TaskTagAlreadyExistsException exception) {
+            throw new RuntimeException("Unexpected TaskTagAlreadyExistsException when removing tags from task", exception);
+        }
     }
 }

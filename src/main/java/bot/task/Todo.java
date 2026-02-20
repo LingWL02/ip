@@ -9,7 +9,7 @@ package bot.task;
 public class Todo extends Task {
 
     /** The tag identifier used for serialization and deserialization. */
-    private static final String tag = "T";
+    private static final String TAG = "T";
 
     /**
      * Constructs a new Todo task with the specified name.
@@ -30,8 +30,8 @@ public class Todo extends Task {
      * @param name           The name or description of the todo task.
      * @param isMarkedString String representation of the marked status ("true" or "false").
      */
-    private Todo(String name, String isMarkedString) {
-        super(name, isMarkedString);
+    private Todo(String name, String isMarkedString, String taskTagsString) {
+        super(name, isMarkedString, taskTagsString);
     }
 
     /**
@@ -47,6 +47,8 @@ public class Todo extends Task {
             + this.getName()
             + DELIMITER
             + this.getIsMarked().toString()
+            + DELIMITER
+            + TaskTag.serializeTaskTags(this.getTaskTags())
             );
     }
 
@@ -60,15 +62,13 @@ public class Todo extends Task {
      */
     public static Task deserialize(String serializedTask) {
         String[] serializedParts = serializedTask.split(DELIMITER);
-        if (serializedParts.length != 3) {
-            throw new RuntimeException(); // TODO
-        }
-        if (!serializedParts[0].equals(tag)) {
-            throw new RuntimeException(); // TODO
-        }
+        assert serializedParts.length == 4 : "Serialized Todo must have 4 parts";
+        assert serializedParts[0].equals(TAG) : "Serialized task tag must be T for Todo";
+
         return new Todo(
             serializedParts[1],
-            serializedParts[2]
+            serializedParts[2],
+            serializedParts[3]
         );
     }
 
@@ -78,7 +78,7 @@ public class Todo extends Task {
      * @return The tag string "T".
      */
     public static String getTag() {
-        return tag;
+        return TAG;
     }
 
     /**

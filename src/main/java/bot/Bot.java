@@ -19,6 +19,9 @@ import bot.task.Task;
 import bot.task.TaskIsMarkedException;
 import bot.task.TaskIsUnmarkedException;
 import bot.task.TaskList;
+import bot.task.TaskTag;
+import bot.task.TaskTagAlreadyExistsException;
+import bot.task.TaskTagDoesNotExistException;
 import bot.task.Todo;
 import utilities.Pair;
 
@@ -647,17 +650,26 @@ public class Bot {
         indexString = indexString.strip();
 
         String[] tagNames = names.split("\\s*,\\s*");
+        TaskTag[] taskTags = List.of(tagNames).stream().map(TaskTag::new).toArray(TaskTag[]::new);
         try {
             int index = Integer.parseUnsignedInt(indexString);
+            Task task = this.taskList.addTagsToTask(index, taskTags);
+            return "Tagged:\n%s".formatted(task.toString());
+        } catch (IndexOutOfBoundsException exception) {
+            return this.formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (NumberFormatException exception) {
             return this.formatIllegalArguments(
                     expectedFormatMessage,
                     "Command 'tag' expects argument 'index' to be a positive integer, got '%s'"
                             .formatted(indexString)
             );
+        } catch (TaskTagAlreadyExistsException exception) {
+            return this.formatIllegalFlags(expectedFormatMessage, exception.getMessage());
+        } catch (IOException | ReflectiveOperationException | SecurityException exception) {
+            return this.formatInternalError(
+                    "An internal error occurred: %s".formatted(exception.getMessage())
+            );
         }
-
-        return "";
     }
 
     /**

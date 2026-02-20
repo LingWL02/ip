@@ -22,7 +22,7 @@ public abstract class Task {
     /** Whether the task has been marked as completed. */
     private Boolean isMarked = false;
 
-    private final List<TaskTag> taskTags = new ArrayList<>();
+    private final List<TaskTag> taskTags;
 
     /**
      * Constructs a new Task with the specified name.
@@ -34,21 +34,17 @@ public abstract class Task {
         assert name != null : "Task name cannot be null";
         assert !name.trim().isEmpty() : "Task name cannot be empty or whitespace only";
         this.name = name;
+        this.taskTags = new ArrayList<TaskTag>();
     }
 
-    /**
-     * Protected constructor for deserialization purposes.
-     * Creates a Task with the specified name and marked status.
-     *
-     * @param name           The name or description of the task.
-     * @param isMarkedString String representation of the marked status ("true" or "false").
-     */
-    protected Task(String name, String isMarkedString) {
+    protected Task(String name, String isMarkedString, String taskTagsString) {
         assert name != null : "Task name cannot be null";
         assert !name.trim().isEmpty() : "Task name cannot be empty or whitespace only";
         assert isMarkedString != null : "IsMarked string cannot be null";
+        assert taskTagsString != null : "Task tags string cannot be null";
         this.name = name;
         this.isMarked = Boolean.parseBoolean(isMarkedString);
+        this.taskTags = TaskTag.deserializeTaskTags(taskTagsString);
     }
 
     /**
@@ -134,14 +130,14 @@ public abstract class Task {
      * Throws an exception if any of the tags already exist on this task.
      *
      * @param taskTags The task tags to add.
-     * @throws IllegalArgumentException If any tag already exists on this task.
+     * @throws TaskTagAlreadyExistsException If any tag already exists on this task.
      */
-    public void addTaskTags(TaskTag... taskTags) {
+    public void addTaskTags(TaskTag... taskTags) throws TaskTagAlreadyExistsException {
         assert taskTags != null : "Task tags array cannot be null";
         for (TaskTag taskTag : taskTags) {
             assert taskTag != null : "Task tag cannot be null";
             if (this.taskTags.contains(taskTag)) {
-                throw new IllegalArgumentException("Task already has tag: " + taskTag);
+                throw new TaskTagAlreadyExistsException("Task already has tag: " + taskTag);
             }
             this.taskTags.add(taskTag);
         }
@@ -152,13 +148,13 @@ public abstract class Task {
      * Throws an exception if any of the tags do not exist on this task.
      *
      * @param taskTags The task tags to remove.
-     * @throws IllegalArgumentException If any tag does not exist on this task.
+     * @throws TaskTagDoesNotExistException If any tag does not exist on this task.
      */
-    public void removeTaskTags(TaskTag... taskTags) {
+    public void removeTaskTags(TaskTag... taskTags) throws TaskTagDoesNotExistException {
         for (TaskTag taskTag : taskTags) {
             assert taskTag != null : "Task tag cannot be null";
             if (!this.taskTags.contains(taskTag)) {
-                throw new IllegalArgumentException("Task does not have tag: " + taskTag);
+                throw new TaskTagDoesNotExistException("Task does not have tag: " + taskTag);
             }
             this.taskTags.remove(taskTag);
         }
