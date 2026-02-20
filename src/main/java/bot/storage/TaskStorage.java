@@ -128,6 +128,15 @@ public class TaskStorage {
     }
 
 
+    /**
+     * Modifies a task at the specified index in the storage file.
+     *
+     * @param index the index of the task to modify (must be non-negative)
+     * @param task the new task to replace the existing task at the given index
+     * @throws IOException if an I/O error occurs while writing to the storage file
+     * @throws ReflectiveOperationException if reflection fails during task processing
+     * @throws SecurityException if security restrictions prevent the operation
+     */
     public void modify(int index, Task task)
             throws IOException, ReflectiveOperationException, SecurityException {
         assert index >= 0 : "Index must be non-negative";
@@ -135,6 +144,14 @@ public class TaskStorage {
         modifyOrDeleteFromStorage(index, task, false);
     }
 
+    /**
+     * Removes a task at the specified index from the storage file.
+     *
+     * @param index the index of the task to remove (must be non-negative)
+     * @throws IOException if an I/O error occurs while writing to the storage file
+     * @throws ReflectiveOperationException if reflection fails during task processing
+     * @throws SecurityException if security restrictions prevent the operation
+     */
     public void remove(int index)
             throws IOException, ReflectiveOperationException, SecurityException {
         assert index >= 0 : "Index must be non-negative";
