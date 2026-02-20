@@ -50,7 +50,7 @@ fi
 
 # compile the code into the bin folder, terminates if error occurred
 echo -e "\n${BOLD}[3/4] Compiling source files...${NC}"
-if ! javac -cp ../src/main/java -Xlint:none -d ../bin ../src/main/java/*.java
+if ! javac -cp ../src/main/java -Xlint:none -d ../bin ../src/main/java/Duke.java
 then
     echo -e "\n${RED}╔════ ERROR ══════════════════════════════════╗${NC}"
     echo -e "${RED}║            BUILD FAILURE                     ║${NC}"
