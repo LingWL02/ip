@@ -102,8 +102,6 @@ public class Bot {
             String response = this.getResponse(userInput);
             this.printToStdOut(response);
         }
-
-        this.printToStdOut(this.getFarewell());
     }
 
     /**
