@@ -31,6 +31,36 @@ import utilities.Pair;
  */
 public class Bot {
 
+    // Pattern constants for command parsing
+    private static final String BYE_PATTERN = "^\\s*bye\\b(?:\\s+(?<arg>.*))?\\s*$";
+    private static final String LIST_PATTERN = "^\\s*list\\b(?:\\s+(?<arg>.*))?\\s*$";
+    private static final String MARK_PATTERN = "^\\s*mark\\b(?:\\s+(?<index>.*))?\\s*$";
+    private static final String UNMARK_PATTERN = "^\\s*unmark\\b(?:\\s+(?<index>.*))?\\s*$";
+    private static final String TODO_PATTERN = "^\\s*todo\\b(?:\\s+(?<name>.*))?\\s*$";
+    private static final String DEADLINE_PATTERN = """
+            ^\\s*deadline\\b
+            (?<byField>\\s+-by\\b
+            (?<by>\\s+
+            (?<year>\\d{4})-(?<month>\\d{1,2})-(?<day>\\d{1,2})
+            (?:\\s*,\\s*(?<hour>\\d{1,2}):(?<minute>\\d{1,2}))?)?)?
+            (?:\\s+(?<name>.*))?\\s*$
+            """;
+    private static final String EVENT_PATTERN = """
+            ^\\s*event\\b
+            (?<fromField>\\s+-from\\b
+            (?<from>\\s+
+            (?<fromYear>\\d{4})-(?<fromMonth>\\d{1,2})-(?<fromDay>\\d{1,2})
+            (?:\\s*,\\s*(?<fromHour>\\d{1,2}):(?<fromMinute>\\d{1,2}))?)?)?
+            (?<toField>\\s+-to\\b
+            (?<to>\\s+
+            (?<toYear>\\d{4})-(?<toMonth>\\d{1,2})-(?<toDay>\\d{1,2})
+            (?:\\s*,\\s*(?<toHour>\\d{1,2}):(?<toMinute>\\d{1,2}))?)?)?
+            (?:\\s+(?<name>.*))?\\s*$
+            """;
+    private static final String DELETE_PATTERN = "^\\s*delete\\b(?:\\s+(?<index>.*))?\\s*$";
+    private static final String FIND_PATTERN = "^\\s*find\\b(?:\\s+(?<keyword>.*))?\\s*$";
+    private static final String CHEER_PATTERN = "^\\s*cheer\\b(?:\\s+(?<arg>.*))?\\s*$";
+
     /**
      * The display name of the chatbot.
      */
@@ -156,38 +186,16 @@ public class Bot {
     private void configureParser() throws Exception {
         this.regexParser.addPatternTagMappings(
                 Map.ofEntries(
-                        Map.entry(Pattern.compile("^\\s*bye\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.BYE),
-                        Map.entry(Pattern.compile("^\\s*list\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.LIST),
-                        Map.entry(Pattern.compile("^\\s*mark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.MARK),
-                        Map.entry(Pattern.compile("^\\s*unmark\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.UNMARK),
-                        Map.entry(Pattern.compile("^\\s*todo\\b(?:\\s+(?<name>.*))?\\s*$"), ParserTag.TODO),
-                        Map.entry(Pattern.compile(
-                                """
-                                        ^\\s*deadline\\b
-                                        (?<byField>\\s+-by\\b
-                                        (?<by>\\s+
-                                        (?<year>\\d{4})-(?<month>\\d{1,2})-(?<day>\\d{1,2})
-                                        (?:\\s*,\\s*(?<hour>\\d{1,2}):(?<minute>\\d{1,2}))?)?)?
-                                        (?:\\s+(?<name>.*))?\\s*$
-                                        """, Pattern.COMMENTS), ParserTag.DEADLINE
-                        ),
-                        Map.entry(Pattern.compile(
-                                """
-                                        ^\\s*event\\b
-                                        (?<fromField>\\s+-from\\b
-                                        (?<from>\\s+
-                                        (?<fromYear>\\d{4})-(?<fromMonth>\\d{1,2})-(?<fromDay>\\d{1,2})
-                                        (?:\\s*,\\s*(?<fromHour>\\d{1,2}):(?<fromMinute>\\d{1,2}))?)?)?
-                                        (?<toField>\\s+-to\\b
-                                        (?<to>\\s+
-                                        (?<toYear>\\d{4})-(?<toMonth>\\d{1,2})-(?<toDay>\\d{1,2})
-                                        (?:\\s*,\\s*(?<toHour>\\d{1,2}):(?<toMinute>\\d{1,2}))?)?)?
-                                        (?:\\s+(?<name>.*))?\\s*$
-                                        """, Pattern.COMMENTS), ParserTag.EVENT
-                        ),
-                        Map.entry(Pattern.compile("^\\s*delete\\b(?:\\s+(?<index>.*))?\\s*$"), ParserTag.DELETE),
-                        Map.entry(Pattern.compile("^\\s*find\\b(?:\\s+(?<keyword>.*))?\\s*$"), ParserTag.FIND),
-                        Map.entry(Pattern.compile("^\\s*cheer\\b(?:\\s+(?<arg>.*))?\\s*$"), ParserTag.CHEER)
+                        Map.entry(Pattern.compile(BYE_PATTERN), ParserTag.BYE),
+                        Map.entry(Pattern.compile(LIST_PATTERN), ParserTag.LIST),
+                        Map.entry(Pattern.compile(MARK_PATTERN), ParserTag.MARK),
+                        Map.entry(Pattern.compile(UNMARK_PATTERN), ParserTag.UNMARK),
+                        Map.entry(Pattern.compile(TODO_PATTERN), ParserTag.TODO),
+                        Map.entry(Pattern.compile(DEADLINE_PATTERN, Pattern.COMMENTS), ParserTag.DEADLINE),
+                        Map.entry(Pattern.compile(EVENT_PATTERN, Pattern.COMMENTS), ParserTag.EVENT),
+                        Map.entry(Pattern.compile(DELETE_PATTERN), ParserTag.DELETE),
+                        Map.entry(Pattern.compile(FIND_PATTERN), ParserTag.FIND),
+                        Map.entry(Pattern.compile(CHEER_PATTERN), ParserTag.CHEER)
                 )
         );
     }
