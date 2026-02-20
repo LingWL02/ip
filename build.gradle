@@ -75,3 +75,11 @@ java {
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
+
+task runConsole(type: JavaExec) {
+    group = "application"
+    description = "Runs Duke console application"
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = "Duke"
+    standardInput = System.in
+}
