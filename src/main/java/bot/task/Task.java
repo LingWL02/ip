@@ -2,6 +2,7 @@ package bot.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Abstract base class representing a task in the Duke chatbot application.
@@ -13,7 +14,7 @@ import java.util.List;
 public abstract class Task {
 
     /** Delimiter used for serializing task fields to a string. */
-    protected static final String DELIMITER = ",";
+    protected static final String DELIMITER = "<SERIALIZATION_DELIMITER>";
 
     /** The name/description of the task. */
     private final String name;
@@ -156,5 +157,15 @@ public abstract class Task {
             }
             this.taskTags.remove(taskTag);
         }
+    }
+
+
+    public String getTaskTagsString() {
+        if (this.taskTags.isEmpty()) {
+            return "";
+        }
+        return this.getTaskTags().stream()
+            .map(TaskTag::toString)
+            .collect(Collectors.joining(", "));
     }
 }

@@ -89,6 +89,6 @@ public class Todo extends Task {
      */
     @Override
     public String toString() {
-        return "[%s] %s".formatted(getTag(), super.toString());
+        return "[%s] %s %s".formatted(getTag(), super.toString(), this.getTaskTagsString()).strip();
     }
 }
