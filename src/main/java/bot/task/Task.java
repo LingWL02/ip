@@ -24,13 +24,6 @@ public abstract class Task {
 
     private final List<TaskTag> taskTags = new ArrayList<>();
 
-     /**
-     * Constructs a new Task with the specified name.
-     * The task is initially unmarked (not completed).
-     *
-     * @param name The name or description of the task.
-     */
-
     /**
      * Constructs a new Task with the specified name.
      * The task is initially unmarked (not completed).
@@ -136,7 +129,13 @@ public abstract class Task {
         return this.taskTags;
     }
 
-
+    /**
+     * Adds one or more task tags to this task.
+     * Throws an exception if any of the tags already exist on this task.
+     *
+     * @param taskTags The task tags to add.
+     * @throws IllegalArgumentException If any tag already exists on this task.
+     */
     public void addTaskTags(TaskTag... taskTags) {
         assert taskTags != null : "Task tags array cannot be null";
         for (TaskTag taskTag : taskTags) {
@@ -148,7 +147,13 @@ public abstract class Task {
         }
     }
 
-
+    /**
+     * Removes one or more task tags from this task.
+     * Throws an exception if any of the tags do not exist on this task.
+     *
+     * @param taskTags The task tags to remove.
+     * @throws IllegalArgumentException If any tag does not exist on this task.
+     */
     public void removeTaskTags(TaskTag... taskTags) {
         for (TaskTag taskTag : taskTags) {
             assert taskTag != null : "Task tag cannot be null";
