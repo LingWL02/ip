@@ -2,6 +2,7 @@ package ui.components;
 import java.io.IOException;
 import java.util.Collections;
 
+import bot.response.Response;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -75,9 +76,33 @@ public class DialogBox extends HBox {
         return new DialogBox(text, img);
     }
 
-    public static DialogBox getBotDialog(String text, Image img) {
-        var db = new DialogBox(text, img);
+    /**
+     * Creates a bot dialog box styled according to the response type.
+     *
+     * @param response The bot's response, carrying both the text and its semantic type.
+     * @param img      The bot's avatar image.
+     * @return A flipped, styled DialogBox for the bot.
+     */
+    public static DialogBox getBotDialog(Response response, Image img) {
+        var db = new DialogBox(response.getMessage(), img);
         db.flip();
+        db.applyResponseStyle(response.getType());
         return db;
+    }
+
+    /**
+     * Applies a CSS style class to the dialog label based on the response type,
+     * so the UI can visually distinguish errors, successes, info, etc.
+     */
+    private void applyResponseStyle(Response.Type type) {
+        String cssClass = switch (type) {
+        case ERROR    -> "error-label";
+        case SUCCESS  -> "success-label";
+        case INFO     -> "info-label";
+        case CHEER    -> "cheer-label";
+        case GREETING -> "greeting-label";
+        case FAREWELL -> "farewell-label";
+        };
+        dialog.getStyleClass().add(cssClass);
     }
 }
