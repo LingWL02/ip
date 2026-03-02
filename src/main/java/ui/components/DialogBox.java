@@ -7,11 +7,13 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 
 /**
  * Represents a dialog box consisting of an ImageView to represent the speaker's face
@@ -35,6 +37,27 @@ public class DialogBox extends HBox {
 
         dialog.setText(text);
         displayPicture.setImage(img);
+
+        // "Cover" crop: take a centered square from the source image so the
+        // circle is always filled with pixels (no letterbox / whitespace).
+        double size = displayPicture.getFitWidth(); // e.g. 50 px
+        displayPicture.setPreserveRatio(false);   // we handle proportions ourselves
+        displayPicture.setFitWidth(size);
+        displayPicture.setFitHeight(size);
+
+        double imgW = img.getWidth();
+        double imgH = img.getHeight();
+        if (imgW > 0 && imgH > 0) {
+            double crop = Math.min(imgW, imgH);          // largest square that fits
+            double x = (imgW - crop) / 2.0;             // centre horizontally
+            double y = (imgH - crop) / 2.0;             // centre vertically
+            displayPicture.setViewport(new Rectangle2D(x, y, crop, crop));
+        }
+
+        // Clip rendered square to a circle
+        double radius = size / 2.0;
+        Circle clip = new Circle(radius, radius, radius);
+        displayPicture.setClip(clip);
     }
 
     /**

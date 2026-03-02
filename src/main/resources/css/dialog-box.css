@@ -1,25 +1,29 @@
+/* ── User bubble (right-aligned) ─────────────────────────── */
 .label {
-    -fx-background-color: linear-gradient(to bottom right, #00ffbf, #00ddff);
-    -fx-border-color: #d55e00 #009e73 #cc79a7 #0072b2;
-    -fx-border-width: 2px;
-    -fx-background-radius: 1em 1em 0 1em;
-    -fx-border-radius: 1em 1em 0 1em;
+    -fx-background-color: linear-gradient(to bottom right, #5b8dee, #a66dd4);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-background-radius: 1.2em 1.2em 0 1.2em;
+    -fx-border-width: 0;
+    -fx-effect: dropshadow(gaussian, rgba(91, 141, 238, 0.35), 8, 0, 2, 3);
 }
 
+/* ── Bot bubble (left-aligned) ────────────────────────────── */
 .reply-label {
-    -fx-background-radius: 1em 1em 1em 0;
-    -fx-border-radius: 1em 1em 1em 0;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #2c2c2c;
+    -fx-font-size: 14px;
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-background-radius: 1.2em 1.2em 1.2em 0;
+    -fx-border-color: transparent transparent transparent #5b8dee;
+    -fx-border-width: 0 0 0 3px;
+    -fx-border-radius: 1.2em 1.2em 1.2em 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.10), 6, 0, 1, 2);
 }
 
+/* ── Avatar circle ────────────────────────────────────────── */
 #displayPicture {
-    /* Shadow effect on image. */
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0.5, 5, 5);
-
-    /* Change size of image. */
-    -fx-scale-x: 1;
-    -fx-scale-y: 1;
-
-    /* Rotate image clockwise by degrees. */
-    -fx-rotate: 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 6, 0.4, 0, 2);
 }
 
