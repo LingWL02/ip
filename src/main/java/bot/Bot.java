@@ -390,7 +390,9 @@ public class Bot {
 
         try {
             Integer index = Integer.parseUnsignedInt(indexString);
-            return new Response("Unmarked:\n%s".formatted(this.taskList.unmark(index).toString()), Response.Type.SUCCESS);
+            return new Response(
+                    "Unmarked:\n%s".formatted(this.taskList.unmark(index).toString()),
+                    Response.Type.SUCCESS);
         } catch (IndexOutOfBoundsException | TaskIsUnmarkedException exception) {
             return this.formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (NumberFormatException exception) {
@@ -732,7 +734,9 @@ public class Bot {
      * @return The formatted error message
      */
     private Response formatIllegalArguments(String expectedFormatMessage, String errorMessage) {
-        return new Response("EXPECTED FORMAT: %s\nILLEGAL ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage), Response.Type.ERROR);
+        return new Response(
+                "EXPECTED FORMAT: %s\nILLEGAL ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage),
+                Response.Type.ERROR);
     }
 
     /**
@@ -743,7 +747,9 @@ public class Bot {
      * @return The formatted error message
      */
     private Response formatMissingArguments(String expectedFormatMessage, String errorMessage) {
-        return new Response("EXPECTED FORMAT: %s\nMISSING ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage), Response.Type.ERROR);
+        return new Response(
+                "EXPECTED FORMAT: %s\nMISSING ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage),
+                Response.Type.ERROR);
     }
 
     /**
@@ -754,7 +760,9 @@ public class Bot {
      * @return The formatted error message
      */
     private Response formatDisallowed(String expectedFormatMessage, String errorMessage) {
-        return new Response("EXPECTED FORMAT: %s\nDISALLOWED: %s".formatted(expectedFormatMessage, errorMessage), Response.Type.ERROR);
+        return new Response(
+                "EXPECTED FORMAT: %s\nDISALLOWED: %s".formatted(expectedFormatMessage, errorMessage),
+                Response.Type.ERROR);
     }
 
     /**
@@ -765,7 +773,9 @@ public class Bot {
      * @return The formatted error message
      */
     private Response formatMissingFlags(String expectedFormatMessage, String errorMessage) {
-        return new Response("EXPECTED FORMAT: %s\nMISSING FLAGS: %s".formatted(expectedFormatMessage, errorMessage), Response.Type.ERROR);
+        return new Response(
+                "EXPECTED FORMAT: %s\nMISSING FLAGS: %s".formatted(expectedFormatMessage, errorMessage),
+                Response.Type.ERROR);
     }
 
     /**
@@ -776,7 +786,9 @@ public class Bot {
      * @return The formatted error message
      */
     private Response formatIllegalFlags(String expectedFormatMessage, String errorMessage) {
-        return new Response("EXPECTED FORMAT: %s\nILLEGAL FLAGS: %s".formatted(expectedFormatMessage, errorMessage), Response.Type.ERROR);
+        return new Response(
+                "EXPECTED FORMAT: %s\nILLEGAL FLAGS: %s".formatted(expectedFormatMessage, errorMessage),
+                Response.Type.ERROR);
     }
 
     /**

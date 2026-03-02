@@ -42,16 +42,16 @@ public class DialogBox extends HBox {
         // "Cover" crop: take a centered square from the source image so the
         // circle is always filled with pixels (no letterbox / whitespace).
         double size = displayPicture.getFitWidth(); // e.g. 50 px
-        displayPicture.setPreserveRatio(false);   // we handle proportions ourselves
+        displayPicture.setPreserveRatio(false); // we handle proportions ourselves
         displayPicture.setFitWidth(size);
         displayPicture.setFitHeight(size);
 
         double imgW = img.getWidth();
         double imgH = img.getHeight();
         if (imgW > 0 && imgH > 0) {
-            double crop = Math.min(imgW, imgH);          // largest square that fits
-            double x = (imgW - crop) / 2.0;             // centre horizontally
-            double y = (imgH - crop) / 2.0;             // centre vertically
+            double crop = Math.min(imgW, imgH); // largest square that fits
+            double x = (imgW - crop) / 2.0; // centre horizontally
+            double y = (imgH - crop) / 2.0; // centre vertically
             displayPicture.setViewport(new Rectangle2D(x, y, crop, crop));
         }
 
@@ -96,10 +96,10 @@ public class DialogBox extends HBox {
      */
     private void applyResponseStyle(Response.Type type) {
         String cssClass = switch (type) {
-        case ERROR    -> "error-label";
-        case SUCCESS  -> "success-label";
-        case INFO     -> "info-label";
-        case CHEER    -> "cheer-label";
+        case ERROR -> "error-label";
+        case SUCCESS -> "success-label";
+        case INFO -> "info-label";
+        case CHEER -> "cheer-label";
         case GREETING -> "greeting-label";
         case FAREWELL -> "farewell-label";
         };
