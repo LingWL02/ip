@@ -14,9 +14,55 @@ import utilities.Pair;
  * This parser allows registration of multiple regex patterns, each associated with a tag,
  * and can parse input strings to identify matching patterns along with their capture groups.
  *
- * @param <T> The type of tag to associate with each pattern (e.g., ParserTag enum).
+ * <p>The canonical tag type is {@link RegexParser.Tag}, which enumerates all supported
+ * bot commands. Callers may still parameterise the parser with any type {@code <T>}.
+ *
+ * @param <T> The type of tag to associate with each pattern.
  */
 public class RegexParser<T> {
+
+    /**
+     * Enumeration of all command types the bot parser can recognise.
+     * Encapsulated here because the tag set is intrinsic to the parser's domain.
+     */
+    public enum Tag {
+
+        /** Command to exit the application. */
+        BYE,
+
+        /** Command to list all tasks. */
+        LIST,
+
+        /** Command to mark a task as completed. */
+        MARK,
+
+        /** Command to unmark a task (mark as not completed). */
+        UNMARK,
+
+        /** Command to add a new Todo task. */
+        TODO,
+
+        /** Command to add a new Deadline task. */
+        DEADLINE,
+
+        /** Command to add a new Event task. */
+        EVENT,
+
+        /** Command to delete a task. */
+        DELETE,
+
+        /** Command to search tasks by keyword. */
+        FIND,
+
+        /** Command to display a cheer/motivational message. */
+        CHEER,
+
+        /** Command to add tags to a task. */
+        TAG,
+
+        /** Command to remove tags from a task. */
+        UNTAG,
+    }
 
     /** Map storing the association between regex patterns and their corresponding tags. */
     private final Map<Pattern, T> patternTagMappings = new HashMap<Pattern, T>();

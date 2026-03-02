@@ -10,7 +10,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import bot.cheerleader.Cheerleader;
-import bot.parser.ParserTag;
 import bot.parser.RegexParser;
 import bot.response.Response;
 import bot.storage.TaskStorage;
@@ -109,7 +108,7 @@ public class Bot {
     /**
      * The regex parser for parsing and routing user commands.
      */
-    private final RegexParser<ParserTag> regexParser = new RegexParser<ParserTag>();
+    private final RegexParser<RegexParser.Tag> regexParser = new RegexParser<RegexParser.Tag>();
 
     private final TaskStorage taskStorage = new TaskStorage(".\\data\\tasks.txt");
 
@@ -211,18 +210,18 @@ public class Bot {
     private void configureParser() throws Exception {
         this.regexParser.addPatternTagMappings(
                 Map.ofEntries(
-                        Map.entry(Pattern.compile(BYE_PATTERN), ParserTag.BYE),
-                        Map.entry(Pattern.compile(LIST_PATTERN), ParserTag.LIST),
-                        Map.entry(Pattern.compile(MARK_PATTERN), ParserTag.MARK),
-                        Map.entry(Pattern.compile(UNMARK_PATTERN), ParserTag.UNMARK),
-                        Map.entry(Pattern.compile(TODO_PATTERN), ParserTag.TODO),
-                        Map.entry(Pattern.compile(DEADLINE_PATTERN, Pattern.COMMENTS), ParserTag.DEADLINE),
-                        Map.entry(Pattern.compile(EVENT_PATTERN, Pattern.COMMENTS), ParserTag.EVENT),
-                        Map.entry(Pattern.compile(DELETE_PATTERN), ParserTag.DELETE),
-                        Map.entry(Pattern.compile(FIND_PATTERN), ParserTag.FIND),
-                        Map.entry(Pattern.compile(CHEER_PATTERN), ParserTag.CHEER),
-                        Map.entry(Pattern.compile(TAG_PATTERN, Pattern.COMMENTS), ParserTag.TAG),
-                        Map.entry(Pattern.compile(UNTAG_PATTERN, Pattern.COMMENTS), ParserTag.UNTAG)
+                        Map.entry(Pattern.compile(BYE_PATTERN), RegexParser.Tag.BYE),
+                        Map.entry(Pattern.compile(LIST_PATTERN), RegexParser.Tag.LIST),
+                        Map.entry(Pattern.compile(MARK_PATTERN), RegexParser.Tag.MARK),
+                        Map.entry(Pattern.compile(UNMARK_PATTERN), RegexParser.Tag.UNMARK),
+                        Map.entry(Pattern.compile(TODO_PATTERN), RegexParser.Tag.TODO),
+                        Map.entry(Pattern.compile(DEADLINE_PATTERN, Pattern.COMMENTS), RegexParser.Tag.DEADLINE),
+                        Map.entry(Pattern.compile(EVENT_PATTERN, Pattern.COMMENTS), RegexParser.Tag.EVENT),
+                        Map.entry(Pattern.compile(DELETE_PATTERN), RegexParser.Tag.DELETE),
+                        Map.entry(Pattern.compile(FIND_PATTERN), RegexParser.Tag.FIND),
+                        Map.entry(Pattern.compile(CHEER_PATTERN), RegexParser.Tag.CHEER),
+                        Map.entry(Pattern.compile(TAG_PATTERN, Pattern.COMMENTS), RegexParser.Tag.TAG),
+                        Map.entry(Pattern.compile(UNTAG_PATTERN, Pattern.COMMENTS), RegexParser.Tag.UNTAG)
                 )
         );
     }
@@ -262,7 +261,7 @@ public class Bot {
     }
 
     public Response getResponse(String input) {
-        List<Pair<ParserTag, Matcher>> parsedResults = this.regexParser.parse(input);
+        List<Pair<RegexParser.Tag, Matcher>> parsedResults = this.regexParser.parse(input);
 
         if (parsedResults.isEmpty()) {
             return new Response("UNRECOGNIZED COMMAND: Please try again.", Response.Type.ERROR);
@@ -279,8 +278,8 @@ public class Bot {
      * @param parsedResult A pair containing the command tag and the regex matcher with captured groups.
      * @return The response string for the command
      */
-    private Response handleParsedResults(Pair<ParserTag, Matcher> parsedResult) {
-        ParserTag tag = parsedResult.getKey();
+    private Response handleParsedResults(Pair<RegexParser.Tag, Matcher> parsedResult) {
+        RegexParser.Tag tag = parsedResult.getKey();
         Matcher matcher = parsedResult.getValue();
 
         return switch (tag) {
@@ -296,7 +295,6 @@ public class Bot {
         case CHEER -> this.handleCheer(matcher);
         case TAG -> this.handleTag(matcher);
         case UNTAG -> this.handleUntag(matcher);
-        default -> new Response("TODO: Tag not implemented.", Response.Type.ERROR);
         };
     }
 
