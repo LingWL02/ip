@@ -1,5 +1,6 @@
 package ui;
 import bot.Bot;
+import bot.response.Response;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -39,7 +40,7 @@ public class MainWindow {
         this.bot = bot;
 
         // Display greeting message when bot is set
-        String greeting = bot.getGreeting();
+        Response greeting = bot.getGreeting();
         dialogContainer.getChildren().add(
             DialogBox.getBotDialog(greeting, dukeImage)
         );
@@ -52,7 +53,7 @@ public class MainWindow {
     @FXML
     private void handleUserInput() {
         String input = userInput.getText();
-        String response = bot.getResponse(input);
+        Response response = bot.getResponse(input);
         dialogContainer.getChildren().addAll(
             DialogBox.getUserDialog(input, userImage),
             DialogBox.getBotDialog(response, dukeImage)

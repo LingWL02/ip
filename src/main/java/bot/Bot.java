@@ -10,8 +10,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import bot.cheerleader.Cheerleader;
-import bot.parser.ParserTag;
 import bot.parser.RegexParser;
+import bot.response.Response;
 import bot.storage.TaskStorage;
 import bot.task.Deadline;
 import bot.task.Event;
@@ -108,7 +108,7 @@ public class Bot {
     /**
      * The regex parser for parsing and routing user commands.
      */
-    private final RegexParser<ParserTag> regexParser = new RegexParser<ParserTag>();
+    private final RegexParser<RegexParser.Tag> regexParser = new RegexParser<RegexParser.Tag>();
 
     private final TaskStorage taskStorage = new TaskStorage(".\\data\\tasks.txt");
 
@@ -156,15 +156,15 @@ public class Bot {
             );
             return;
         }
-        this.printToStdOut(this.getGreeting());
+        this.printToStdOut(this.getGreeting().getMessage());
 
         while (this.isAlive) {
             if (!this.appScanner.hasNextLine()) {
                 return;
             }
             String userInput = this.appScanner.nextLine();
-            String response = this.getResponse(userInput);
-            this.printToStdOut(response);
+            Response response = this.getResponse(userInput);
+            this.printToStdOut(response.getMessage());
         }
     }
 
@@ -210,18 +210,18 @@ public class Bot {
     private void configureParser() throws Exception {
         this.regexParser.addPatternTagMappings(
                 Map.ofEntries(
-                        Map.entry(Pattern.compile(BYE_PATTERN), ParserTag.BYE),
-                        Map.entry(Pattern.compile(LIST_PATTERN), ParserTag.LIST),
-                        Map.entry(Pattern.compile(MARK_PATTERN), ParserTag.MARK),
-                        Map.entry(Pattern.compile(UNMARK_PATTERN), ParserTag.UNMARK),
-                        Map.entry(Pattern.compile(TODO_PATTERN), ParserTag.TODO),
-                        Map.entry(Pattern.compile(DEADLINE_PATTERN, Pattern.COMMENTS), ParserTag.DEADLINE),
-                        Map.entry(Pattern.compile(EVENT_PATTERN, Pattern.COMMENTS), ParserTag.EVENT),
-                        Map.entry(Pattern.compile(DELETE_PATTERN), ParserTag.DELETE),
-                        Map.entry(Pattern.compile(FIND_PATTERN), ParserTag.FIND),
-                        Map.entry(Pattern.compile(CHEER_PATTERN), ParserTag.CHEER),
-                        Map.entry(Pattern.compile(TAG_PATTERN, Pattern.COMMENTS), ParserTag.TAG),
-                        Map.entry(Pattern.compile(UNTAG_PATTERN, Pattern.COMMENTS), ParserTag.UNTAG)
+                        Map.entry(Pattern.compile(BYE_PATTERN), RegexParser.Tag.BYE),
+                        Map.entry(Pattern.compile(LIST_PATTERN), RegexParser.Tag.LIST),
+                        Map.entry(Pattern.compile(MARK_PATTERN), RegexParser.Tag.MARK),
+                        Map.entry(Pattern.compile(UNMARK_PATTERN), RegexParser.Tag.UNMARK),
+                        Map.entry(Pattern.compile(TODO_PATTERN), RegexParser.Tag.TODO),
+                        Map.entry(Pattern.compile(DEADLINE_PATTERN, Pattern.COMMENTS), RegexParser.Tag.DEADLINE),
+                        Map.entry(Pattern.compile(EVENT_PATTERN, Pattern.COMMENTS), RegexParser.Tag.EVENT),
+                        Map.entry(Pattern.compile(DELETE_PATTERN), RegexParser.Tag.DELETE),
+                        Map.entry(Pattern.compile(FIND_PATTERN), RegexParser.Tag.FIND),
+                        Map.entry(Pattern.compile(CHEER_PATTERN), RegexParser.Tag.CHEER),
+                        Map.entry(Pattern.compile(TAG_PATTERN, Pattern.COMMENTS), RegexParser.Tag.TAG),
+                        Map.entry(Pattern.compile(UNTAG_PATTERN, Pattern.COMMENTS), RegexParser.Tag.UNTAG)
                 )
         );
     }
@@ -243,13 +243,12 @@ public class Bot {
         }
     }
 
-    public String getGreeting() {
-        return "Hello! I'm %s!\nWhat can I do for you?".formatted(this.name);
-
+    public Response getGreeting() {
+        return new Response("Hello! I'm %s!\nWhat can I do for you?".formatted(this.name), Response.Type.GREETING);
     }
 
-    public String getFarewell() {
-        return "Bye. Hope to see you again soon!";
+    public Response getFarewell() {
+        return new Response("Bye. Hope to see you again soon!", Response.Type.FAREWELL);
     }
 
     /**
@@ -261,14 +260,14 @@ public class Bot {
         return this.isAlive;
     }
 
-    public String getResponse(String input) {
-        List<Pair<ParserTag, Matcher>> parsedResults = this.regexParser.parse(input);
+    public Response getResponse(String input) {
+        List<Pair<RegexParser.Tag, Matcher>> parsedResults = this.regexParser.parse(input);
 
         if (parsedResults.isEmpty()) {
-            return "UNRECOGNIZED COMMAND: Please try again.";
+            return new Response("UNRECOGNIZED COMMAND: Please try again.", Response.Type.ERROR);
         } else if (parsedResults.size() > 1) {
             this.isAlive = false; // Terminate app for multiple matches
-            return "ERROR: User Input matched multiple entries.\nTerminating app...";
+            return new Response("ERROR: User Input matched multiple entries.\nTerminating app...", Response.Type.ERROR);
         }
         return this.handleParsedResults(parsedResults.getFirst());
     }
@@ -279,8 +278,8 @@ public class Bot {
      * @param parsedResult A pair containing the command tag and the regex matcher with captured groups.
      * @return The response string for the command
      */
-    private String handleParsedResults(Pair<ParserTag, Matcher> parsedResult) {
-        ParserTag tag = parsedResult.getKey();
+    private Response handleParsedResults(Pair<RegexParser.Tag, Matcher> parsedResult) {
+        RegexParser.Tag tag = parsedResult.getKey();
         Matcher matcher = parsedResult.getValue();
 
         return switch (tag) {
@@ -296,7 +295,6 @@ public class Bot {
         case CHEER -> this.handleCheer(matcher);
         case TAG -> this.handleTag(matcher);
         case UNTAG -> this.handleUntag(matcher);
-        default -> "TODO: Tag not implemented.";
         };
     }
 
@@ -307,7 +305,7 @@ public class Bot {
      * @param matcher The regex matcher containing captured groups from the command.
      * @return The response string for the bye command
      */
-    private String handleBye(Matcher matcher) {
+    private Response handleBye(Matcher matcher) {
         String arg = matcher.group("arg");
 
         if (arg != null) {
@@ -326,7 +324,7 @@ public class Bot {
      * @param matcher The regex matcher containing captured groups from the command.
      * @return The response string for the list command
      */
-    private String handleList(Matcher matcher) {
+    private Response handleList(Matcher matcher) {
         String arg = matcher.group("arg");
 
         if (arg != null) {
@@ -334,7 +332,7 @@ public class Bot {
                     "list",
                     "Command 'list' does not accept any arguments.");
         }
-        return "Task List:\n%s".formatted(this.taskList.toString());
+        return new Response("Task List:\n%s".formatted(this.taskList.toString()), Response.Type.INFO);
     }
 
     /**
@@ -344,7 +342,7 @@ public class Bot {
      * @param matcher The regex matcher containing the index captured group.
      * @return The response string for the mark command
      */
-    private String handleMark(Matcher matcher) {
+    private Response handleMark(Matcher matcher) {
         String indexString = matcher.group("index");
         String expectedFormatMessage = "mark <index>";
 
@@ -357,7 +355,7 @@ public class Bot {
 
         try {
             Integer index = Integer.parseUnsignedInt(indexString);
-            return "Marked:\n%s".formatted(this.taskList.mark(index).toString());
+            return new Response("Marked:\n%s".formatted(this.taskList.mark(index).toString()), Response.Type.SUCCESS);
         } catch (IndexOutOfBoundsException | TaskIsMarkedException exception) {
             return this.formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (NumberFormatException exception) {
@@ -379,7 +377,7 @@ public class Bot {
      * @param matcher The regex matcher containing the index captured group.
      * @return The response string for the unmark command
      */
-    private String handleUnmark(Matcher matcher) {
+    private Response handleUnmark(Matcher matcher) {
         String indexString = matcher.group("index");
         String expectedFormatMessage = "unmark <index>";
 
@@ -392,7 +390,9 @@ public class Bot {
 
         try {
             Integer index = Integer.parseUnsignedInt(indexString);
-            return "Unmarked:\n%s".formatted(this.taskList.unmark(index).toString());
+            return new Response(
+                    "Unmarked:\n%s".formatted(this.taskList.unmark(index).toString()),
+                    Response.Type.SUCCESS);
         } catch (IndexOutOfBoundsException | TaskIsUnmarkedException exception) {
             return this.formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (NumberFormatException exception) {
@@ -415,7 +415,7 @@ public class Bot {
      * @param matcher The regex matcher containing the name captured group.
      * @return The response string for the todo command
      */
-    private String handleTodo(Matcher matcher) {
+    private Response handleTodo(Matcher matcher) {
         String name = matcher.group("name");
         if (name == null) {
             return this.formatMissingArguments(
@@ -427,7 +427,7 @@ public class Bot {
         Todo todo = new Todo(name);
         try {
             this.taskList.add(todo);
-            return "Todo added:\n%s".formatted(todo.toString());
+            return new Response("Todo added:\n%s".formatted(todo.toString()), Response.Type.SUCCESS);
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             return this.formatInternalError(
                     "An internal error occured: %s".formatted(exception.getMessage())
@@ -443,7 +443,7 @@ public class Bot {
      * @param matcher The regex matcher containing name, year, month, day, hour, minute captured groups.
      * @return The response string for the deadline command
      */
-    private String handleDeadline(Matcher matcher) {
+    private Response handleDeadline(Matcher matcher) {
         String expectedFormatMessage = "deadline -by <year>-<month>-<day>[,<hour>:<minute>] <name>";
         String byField = matcher.group("byField");
         String by = matcher.group("by");
@@ -479,7 +479,7 @@ public class Bot {
             LocalDateTime dateTime = LocalDateTime.of(year, month, day, hour, minute);
             Deadline deadline = new Deadline(name, dateTime, hasByTime);
             this.taskList.add(deadline);
-            return "Deadline added:\n%s".formatted(deadline.toString());
+            return new Response("Deadline added:\n%s".formatted(deadline.toString()), Response.Type.SUCCESS);
         } catch (DateTimeException exception) {
             return formatIllegalArguments(expectedFormatMessage, exception.getMessage());
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
@@ -498,7 +498,7 @@ public class Bot {
      * @param matcher The regex matcher containing name, from/to date/time captured groups.
      * @return The response string for the event command
      */
-    private String handleEvent(Matcher matcher) {
+    private Response handleEvent(Matcher matcher) {
         String expectedFormatMessage =
                 """
                         event -from <year>-<month>-<day>[,<hour>:<minute>]
@@ -553,7 +553,7 @@ public class Bot {
             LocalDateTime endDateTime = LocalDateTime.of(toYear, toMonth, toDay, toHour, toMin);
             Event event = new Event(name.strip(), startDateTime, hasStartTime, endDateTime, hasEndTime);
             this.taskList.add(event);
-            return "Event added:\n%s".formatted(event.toString());
+            return new Response("Event added:\n%s".formatted(event.toString()), Response.Type.SUCCESS);
         } catch (DateTimeException exception) {
             return formatIllegalArguments(expectedFormatMessage, exception.getMessage());
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
@@ -570,7 +570,7 @@ public class Bot {
      * @param matcher The regex matcher containing the index captured group.
      * @return The response string for the delete command
      */
-    private String handleDelete(Matcher matcher) {
+    private Response handleDelete(Matcher matcher) {
         String indexString = matcher.group("index");
         String expectedFormatMessage = "delete <index>";
 
@@ -584,9 +584,9 @@ public class Bot {
         try {
             int index = Integer.parseUnsignedInt(indexString);
             int sizeAfter = this.taskList.getSize() - 1;
-            return "Deleted:\n%s\n%d %s remaining".formatted(
+            return new Response("Deleted:\n%s\n%d %s remaining".formatted(
                             this.taskList.pop(index).toString(), sizeAfter, (sizeAfter > 1) ? "tasks" : "task"
-                    );
+                    ), Response.Type.SUCCESS);
         } catch (IndexOutOfBoundsException exception) {
             return this.formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (NumberFormatException exception) {
@@ -602,7 +602,7 @@ public class Bot {
         }
     }
 
-    private String handleFind(Matcher matcher) {
+    private Response handleFind(Matcher matcher) {
         String keyword = matcher.group("keyword");
         String expectedFormatMessage = "find <keyword>";
 
@@ -618,11 +618,11 @@ public class Bot {
             Pair<Integer, Task> pair = foundTasks.get(i);
             bobTheBuilder.append("%d. %s\n".formatted(pair.getKey(), pair.getValue().toString()));
         }
-        return bobTheBuilder.toString();
+        return new Response(bobTheBuilder.toString(), Response.Type.INFO);
     }
 
 
-    private String handleCheer(Matcher matcher) {
+    private Response handleCheer(Matcher matcher) {
         String arg = matcher.group("arg");
 
         if (arg != null) {
@@ -631,7 +631,7 @@ public class Bot {
                     "Command 'cheer' does not accept any arguments.");
         }
         try {
-            return this.cheerleader.cheer();
+            return new Response(this.cheerleader.cheer(), Response.Type.CHEER);
         } catch (IOException exception) {
             return this.formatInternalError(
                 "An internal error occurred: %s".formatted(exception.getMessage())
@@ -640,7 +640,7 @@ public class Bot {
     }
 
 
-    private String handleTag(Matcher matcher) {
+    private Response handleTag(Matcher matcher) {
         String expectedFormatMessage = "tag -names <name1,name2,...> <index>";
 
         String nameFields = matcher.group("nameFields");
@@ -665,7 +665,7 @@ public class Bot {
         try {
             int index = Integer.parseUnsignedInt(indexString);
             Task task = this.taskList.addTagsToTask(index, taskTags);
-            return "Tagged:\n%s".formatted(task.toString());
+            return new Response("Tagged:\n%s".formatted(task.toString()), Response.Type.SUCCESS);
         } catch (IndexOutOfBoundsException exception) {
             return this.formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (NumberFormatException exception) {
@@ -683,7 +683,7 @@ public class Bot {
         }
     }
 
-    private String handleUntag(Matcher matcher) {
+    private Response handleUntag(Matcher matcher) {
         String expectedFormatMessage = "untag -names <name1,name2,...> <index>";
 
         String nameFields = matcher.group("nameFields");
@@ -708,7 +708,7 @@ public class Bot {
         try {
             int index = Integer.parseUnsignedInt(indexString);
             Task task = this.taskList.removeTagsFromTask(index, taskTags);
-            return "Untagged:\n%s".formatted(task.toString());
+            return new Response("Untagged:\n%s".formatted(task.toString()), Response.Type.SUCCESS);
         } catch (IndexOutOfBoundsException exception) {
             return this.formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (NumberFormatException exception) {
@@ -733,8 +733,10 @@ public class Bot {
      * @param errorMessage          The specific error description.
      * @return The formatted error message
      */
-    private String formatIllegalArguments(String expectedFormatMessage, String errorMessage) {
-        return "EXPECTED FORMAT: %s\nILLEGAL ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage);
+    private Response formatIllegalArguments(String expectedFormatMessage, String errorMessage) {
+        return new Response(
+                "EXPECTED FORMAT: %s\nILLEGAL ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage),
+                Response.Type.ERROR);
     }
 
     /**
@@ -744,8 +746,10 @@ public class Bot {
      * @param errorMessage          The specific error description.
      * @return The formatted error message
      */
-    private String formatMissingArguments(String expectedFormatMessage, String errorMessage) {
-        return "EXPECTED FORMAT: %s\nMISSING ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage);
+    private Response formatMissingArguments(String expectedFormatMessage, String errorMessage) {
+        return new Response(
+                "EXPECTED FORMAT: %s\nMISSING ARGUMENTS: %s".formatted(expectedFormatMessage, errorMessage),
+                Response.Type.ERROR);
     }
 
     /**
@@ -755,8 +759,10 @@ public class Bot {
      * @param errorMessage          The specific error description.
      * @return The formatted error message
      */
-    private String formatDisallowed(String expectedFormatMessage, String errorMessage) {
-        return "EXPECTED FORMAT: %s\nDISALLOWED: %s".formatted(expectedFormatMessage, errorMessage);
+    private Response formatDisallowed(String expectedFormatMessage, String errorMessage) {
+        return new Response(
+                "EXPECTED FORMAT: %s\nDISALLOWED: %s".formatted(expectedFormatMessage, errorMessage),
+                Response.Type.ERROR);
     }
 
     /**
@@ -766,8 +772,10 @@ public class Bot {
      * @param errorMessage          The specific error description.
      * @return The formatted error message
      */
-    private String formatMissingFlags(String expectedFormatMessage, String errorMessage) {
-        return "EXPECTED FORMAT: %s\nMISSING FLAGS: %s".formatted(expectedFormatMessage, errorMessage);
+    private Response formatMissingFlags(String expectedFormatMessage, String errorMessage) {
+        return new Response(
+                "EXPECTED FORMAT: %s\nMISSING FLAGS: %s".formatted(expectedFormatMessage, errorMessage),
+                Response.Type.ERROR);
     }
 
     /**
@@ -777,8 +785,10 @@ public class Bot {
      * @param errorMessage          The specific error description.
      * @return The formatted error message
      */
-    private String formatIllegalFlags(String expectedFormatMessage, String errorMessage) {
-        return "EXPECTED FORMAT: %s\nILLEGAL FLAGS: %s".formatted(expectedFormatMessage, errorMessage);
+    private Response formatIllegalFlags(String expectedFormatMessage, String errorMessage) {
+        return new Response(
+                "EXPECTED FORMAT: %s\nILLEGAL FLAGS: %s".formatted(expectedFormatMessage, errorMessage),
+                Response.Type.ERROR);
     }
 
     /**
@@ -787,7 +797,7 @@ public class Bot {
      * @param errorMessage The error description.
      * @return The formatted error message
      */
-    private String formatInternalError(String errorMessage) {
-        return "INTERNAL ERROR: %s".formatted(errorMessage);
+    private Response formatInternalError(String errorMessage) {
+        return new Response("INTERNAL ERROR: %s".formatted(errorMessage), Response.Type.ERROR);
     }
 }
