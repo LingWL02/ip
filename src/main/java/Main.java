@@ -42,7 +42,7 @@ public class Main extends Application {
             - list: show all tasks
             - todo <name>: add a simple task
             - deadline <name> -by <YYYY-MM-DD[, HH:MM]>: add a task with a due date
-            - event <name> -from <date> -to <date>: add a timed event
+            - event <name> -from <YYYY-MM-DD[, HH:MM]> -to <YYYY-MM-DD[, HH:MM]>: add a timed event
             - mark <index> / unmark <index>: toggle a task done/undone
             - delete <index>: remove a task
             - find <keyword>: search tasks by keyword
