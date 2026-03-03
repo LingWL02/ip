@@ -73,10 +73,10 @@ public class GeminiProcessor {
             - If it looks like a typo of a real command — correct it with the right syntax and \
             one example in one sentence.
             Use the conversation history to maintain continuity. \
-            Keep the response concise and fully in persona. No markdown.
+            Keep the response concise and fully in persona.
             User Input: %s \
-            Response type: %s \
-            Original message: %s
+            Response Type: %s \
+            Original Response: %s
             """.formatted(history, userInput, response.getType().name(), response.getMessage())
             : """
             %sRewrite the following bot response in your persona. \
@@ -86,8 +86,8 @@ public class GeminiProcessor {
             If the user's input feels conversational, let your personality shine through \
             while still delivering the information cleanly. \
             User Input: %s \
-            Response type: %s \
-            Original message: %s
+            Response Type: %s \
+            Original Response: %s
             """.formatted(history, userInput, response.getType().name(), response.getMessage());
 
         Response augmentedResponse = this.client.map(
