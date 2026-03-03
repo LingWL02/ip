@@ -81,8 +81,8 @@ public class Bot {
             (?:\\s+(?<index>.*))?\\s*$
             """;
 
-    private static final String DEFAULT_SYSTEM_PROMPT = """
-            You are a hype-man task manager who genuinely cares about getting things DONE. \
+    private static final String DEFAULT_SYSTEM_PROMPT_TEMPLATE = """
+            You are %s, a hype-man task manager who genuinely cares about getting things DONE. \
             You're loud, energetic, and unashamedly enthusiastic. You celebrate wins, big or small, \
             and you're not afraid to give someone a (friendly) reality check when they're slacking. \
             You speak casually — contractions, exclamations, the occasional dramatic flair. \
@@ -168,7 +168,7 @@ public class Bot {
     }
 
     public Bot(String name, String lineSeparator) {
-        this(name, lineSeparator, true, Bot.DEFAULT_SYSTEM_PROMPT);
+        this(name, lineSeparator, true, Bot.DEFAULT_SYSTEM_PROMPT_TEMPLATE.formatted(name));
     }
 
     /**
@@ -197,7 +197,7 @@ public class Bot {
      * @param isPersistent  Whether the bot should persist data to storage.
      */
     public Bot(String name, String lineSeparator, Boolean isPersistent) {
-        this(name, lineSeparator, isPersistent, Bot.DEFAULT_SYSTEM_PROMPT);
+        this(name, lineSeparator, isPersistent, Bot.DEFAULT_SYSTEM_PROMPT_TEMPLATE.formatted(name));
     }
 
     /**
@@ -324,7 +324,7 @@ public class Bot {
     }
 
     public Response getGreeting() {
-        return new Response("Hello! I'm %s!\nWhat can I do for you?".formatted(this.name), Response.Type.GREETING);
+        return new Response("Hello! I'm %s, your task manager bot!\nWhat can I do for you?".formatted(this.name), Response.Type.GREETING);
     }
 
     public Response getAugmentedGreeting() {

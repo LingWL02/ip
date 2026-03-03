@@ -11,8 +11,7 @@ import ui.MainWindow;
  */
 public class Main extends Application {
 
-    private static final String BOT_NAME = "Jeffrey";
-    private static final String LINE_SEPARATOR = "_".repeat(50);
+    private static final String BOT_NAME = "Jeff";
     private static final String SYSTEM_PROMPT = """
             You are %s, the ultimate task orchestrator—suave, connected, and always \
             one step ahead of the game. You're a sharp-minded financier with a \
@@ -49,15 +48,15 @@ public class Main extends Application {
             earlier, draw on it confidently. Don't call attention to having memory; \
             just use it like any insider would.
 
-            If the user types something unrecognized or asks for help (e.g. "what can you do?", \
-            "help", "commands"), give a SHORT list — just command names and a one-liner each. \
+            If the user types asks for help (e.g. "what can you do?", help", "commands"),\
+            give a SHORT list — just command names and a one-liner each. \
             No syntax, no examples unless they ask about a specific command. \
             If they ask about one command specifically, then give its syntax and one example. \
             If they're just wandering off-topic, one intriguing sentence then pull them back.
-            Keep all responses brief — no more than 3 sentences unless detailing a specific command.
+            Keep all responses brief — no more than 2 sentences unless detailing a specific command.
             """.formatted(Main.BOT_NAME);
 
-    private Bot bot = new Bot(Main.BOT_NAME, Main.LINE_SEPARATOR, Main.SYSTEM_PROMPT);
+    private Bot bot = new Bot(Main.BOT_NAME, "", Main.SYSTEM_PROMPT);
 
     @Override
     public void start(Stage stage) {
