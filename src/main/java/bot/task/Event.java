@@ -123,7 +123,11 @@ public class Event extends Task {
      */
     public static Task deserialize(String serializedTask) {
         String[] serializedParts = serializedTask.split(DELIMITER);
-        assert serializedParts.length == 7 : "Serialized Event must have 7 parts";
+        if (serializedParts.length != 7) {
+            throw new IllegalArgumentException(
+                "Invalid serialized Event: expected 7 fields but got %d".formatted(serializedParts.length)
+            );
+        }
         return new Event(
             serializedParts[0],
             serializedParts[1],
@@ -179,5 +183,25 @@ public class Event extends Task {
         } else {
             return this.toDateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy"));
         }
+    }
+
+    /**
+     * Two Events are equal when they have the same name, start date/time, and end date/time.
+     *
+     * @param obj The object to compare to.
+     * @return {@code true} if both events are identical in content.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        Event other = (Event) obj;
+        return this.fromDateTime.equals(other.fromDateTime) && this.toDateTime.equals(other.toDateTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(super.hashCode(), this.fromDateTime, this.toDateTime);
     }
 }

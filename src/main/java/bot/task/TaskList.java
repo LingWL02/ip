@@ -36,8 +36,11 @@ public class TaskList {
      */
     public void mountStorage(TaskStorage storage)
             throws IOException, ReflectiveOperationException, SecurityException {
+        // Load tasks first — if this throws, we leave this.storage unmounted
+        // so the task list stays consistent (no partial state).
+        List<Task> loadedTasks = storage.getTasks();
         this.storage = Optional.of(storage);
-        this.taskList = storage.getTasks();
+        this.taskList = loadedTasks;
     }
 
 
@@ -49,8 +52,17 @@ public class TaskList {
      * @throws ReflectiveOperationException if reflection operations fail
      * @throws SecurityException if security restrictions apply
      */
-    public void add(Task task) throws IOException, ReflectiveOperationException, SecurityException {
+    public void add(Task task)
+            throws IOException, ReflectiveOperationException, SecurityException, DuplicateTaskException {
         assert task != null : "Task cannot be null";
+
+        for (Task existing : this.taskList) {
+            if (existing.equals(task)) {
+                throw new DuplicateTaskException(
+                    "A task with identical details already exists: " + existing.toString()
+                );
+            }
+        }
 
         if (this.storage.isPresent()) {
             TaskStorage storage = this.storage.get();

@@ -94,7 +94,11 @@ public class Deadline extends Task {
      */
     public static Deadline deserialize(String serializedTask) {
         String[] serializedParts = serializedTask.split(DELIMITER);
-        assert serializedParts.length == 5 : "Serialized Deadline must have at least 5 parts";
+        if (serializedParts.length != 5) {
+            throw new IllegalArgumentException(
+                "Invalid serialized Deadline: expected 5 fields but got %d".formatted(serializedParts.length)
+            );
+        }
         return new Deadline(
             serializedParts[0],
             serializedParts[1],
@@ -138,5 +142,25 @@ public class Deadline extends Task {
         } else {
             return this.byDateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy"));
         }
+    }
+
+    /**
+     * Two Deadlines are equal when they have the same name and the same due date/time.
+     *
+     * @param obj The object to compare to.
+     * @return {@code true} if both deadlines are identical in content.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        Deadline other = (Deadline) obj;
+        return this.byDateTime.equals(other.byDateTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(super.hashCode(), this.byDateTime);
     }
 }
