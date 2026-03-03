@@ -65,8 +65,9 @@ checkstyle {
     toolVersion = '11.0.0'
 }
 
-run{
+run {
     standardInput = System.in
+    environment "GEMINI_API_KEY", project.findProperty("geminiApiKey") ?: ""
 }
 
 java {
@@ -84,16 +85,4 @@ task runConsole(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass = "Duke"
     standardInput = System.in
-}
-
-task testGemini(type: JavaExec) {
-    group = "verification"
-    description = "Smoke-tests the Gemini API integration (requires GEMINI_API_KEY env var)"
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = "TestGemini"
-    environment "GEMINI_API_KEY", project.findProperty("geminiApiKey") ?: ""
-    // Optional: pass a custom prompt as: ./gradlew testGemini --args="your prompt here"
-    if (project.hasProperty("geminiPrompt")) {
-        args project.property("geminiPrompt")
-    }
 }

@@ -17,10 +17,12 @@ public class GeminiProcessor {
 
     private final static String API_KEY = System.getenv("GEMINI_API_KEY");
 
-    private final String model = "gemini-2.5-flash";
+    private final String model = "gemini-2.5-flash-lite";
+
+    private String historyContext = "";
 
     private final Optional<Client> client = (API_KEY != null && !API_KEY.isBlank())
-        ? Optional.of(new Client())
+        ? Optional.of(Client.builder().apiKey(API_KEY).build())
         : Optional.empty();
 
     private final GenerateContentConfig config;
@@ -34,8 +36,50 @@ public class GeminiProcessor {
     }
 
 
-    public Response augmentResponse(Response response) {
-        return response;
+    public Response augmentResponse(String userInput, Response response) {
+        String history = historyContext.isBlank()
+            ? ""
+            : """
+            CONVERSATION HISTORY (for context only — use it to maintain continuity, \
+            refer back when relevant, and avoid repeating yourself):
+            %s
+
+            """.formatted(historyContext);
+
+        String prompt = response.getType() == Response.Type.ERROR
+            ? """
+            %sThe user typed something that isn't a recognized command: "%s"
+            Acknowledge what they said, then redirect them to use the available commands. \
+            Keep it short.
+            """.formatted(history, userInput)
+            : """
+            %sRewrite the following bot response in your persona. \
+            Preserve all key information exactly — do not add, remove, or change any facts, \
+            command syntax, task names, dates, or indices. \
+            User Input: %s \
+            Response type: %s \
+            Original message: %s
+            """.formatted(history, userInput, response.getType().name(), response.getMessage());
+
+        Response augmentedResponse = this.client.map(
+            c -> {
+                GenerateContentResponse genResponse = c.models.generateContent(this.model, prompt, this.config);
+                String augmentedMessage = genResponse.text();
+                return new Response(augmentedMessage, response.getType());
+            }
+        ).orElse(response);
+
+        historyContext += "\nUser Input: " + userInput
+            + "\nBot Response Type: " + response.getType().name()
+            + "\nBot Response: " + augmentedResponse.getMessage();
+
+        // Keep only the last 50 lines of history
+        String[] lines = historyContext.split("\n", -1);
+        if (lines.length > 50) {
+            historyContext = String.join("\n", java.util.Arrays.copyOfRange(lines, lines.length - 50, lines.length));
+        }
+
+        return augmentedResponse;
     }
 
     // for testing

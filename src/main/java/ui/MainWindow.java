@@ -53,7 +53,7 @@ public class MainWindow {
     @FXML
     private void handleUserInput() {
         String input = userInput.getText();
-        Response response = bot.getResponse(input);
+        Response response = bot.getAugmentedResponse(input);
         dialogContainer.getChildren().addAll(
             DialogBox.getUserDialog(input, userImage),
             DialogBox.getBotDialog(response, dukeImage)
