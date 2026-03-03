@@ -1,4 +1,4 @@
-package ai;
+package bot.ai;
 
 import com.google.genai.Client;
 import com.google.genai.types.Content;
