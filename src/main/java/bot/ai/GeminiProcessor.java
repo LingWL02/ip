@@ -78,7 +78,6 @@ public class GeminiProcessor {
             Original message: %s
             """.formatted(history, userInput, response.getType().name(), response.getMessage());
 
-        System.out.println("GeminiProcessor prompt:\n" + prompt + "\n\n");
         Response augmentedResponse = this.client.map(
             c -> {
                 GenerateContentResponse genResponse = c.models.generateContent(this.model, prompt, this.config);
