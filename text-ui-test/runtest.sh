@@ -33,35 +33,28 @@ fi
 
 echo -e "${GREEN}✓ Java version check passed${NC}\n"
 
-# create bin directory if it doesn't exist
-echo -e "${BOLD}[2/4] Setting up test environment...${NC}"
-if [ ! -d "../bin" ]
-then
-    mkdir ../bin
-    echo -e "${BLUE}Created bin directory${NC}"
-fi
-
 # delete output from previous run
+echo -e "${BOLD}[2/4] Setting up test environment...${NC}"
 if [ -e "./ACTUAL.TXT" ]
 then
     rm ACTUAL.TXT
     echo -e "${BLUE}Cleaned up previous test outputs${NC}"
 fi
 
-# compile the code into the bin folder, terminates if error occurred
-echo -e "\n${BOLD}[3/4] Compiling source files...${NC}"
-if ! javac -cp ../src/main/java -Xlint:none -d ../bin ../src/main/java/Duke.java
+# build the project using Gradle (produces fat JAR with all dependencies)
+echo -e "\n${BOLD}[3/4] Building with Gradle...${NC}"
+if ! (cd .. && ./gradlew shadowJar -q)
 then
     echo -e "\n${RED}╔════ ERROR ══════════════════════════════════╗${NC}"
     echo -e "${RED}║            BUILD FAILURE                     ║${NC}"
     echo -e "${RED}╚═════════════════════════════════════════════╝${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓ Compilation successful${NC}\n"
+echo -e "${GREEN}✓ Build successful${NC}\n"
 
 # run the program, feed commands from input.txt file and redirect the output to the ACTUAL.TXT
 echo -e "${BOLD}[4/4] Running tests...${NC}"
-java -classpath ../bin Duke < input.txt > ACTUAL.TXT
+java -cp ../build/libs/javafx-duke.jar Duke < input.txt > ACTUAL.TXT
 
 # convert to UNIX format
 cp EXPECTED.TXT EXPECTED-UNIX.TXT

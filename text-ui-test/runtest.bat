@@ -31,20 +31,15 @@ echo [√] Java version check passed
 echo.
 
 echo [2/4] Setting up test environment...
-if not exist ..\bin (
-    mkdir ..\bin
-    echo Created bin directory
-)
-
 if exist ACTUAL.TXT (
     del ACTUAL.TXT
     echo Cleaned up previous test outputs
 )
 
 echo.
-echo [3/4] Compiling source files...
-:: Only compile Duke, the javac build environment with git action cant compile JavaFX (this test does not use gradle)
-javac -cp ..\src\main\java -Xlint:none -d ..\bin ..\src\main\java\Duke.java
+echo [3/4] Building with Gradle...
+cd ..
+call gradlew.bat shadowJar -q
 IF ERRORLEVEL 1 (
     echo.
     echo =============== ERROR ===============
@@ -52,12 +47,13 @@ IF ERRORLEVEL 1 (
     echo ===================================
     exit /b 1
 )
+cd text-ui-test
 
-echo [√] Compilation successful
+echo [√] Build successful
 echo.
 
 echo [4/4] Running tests...
-java -classpath ..\bin Duke < input.txt > ACTUAL.TXT
+java -cp ..\build\libs\javafx-duke.jar Duke < input.txt > ACTUAL.TXT
 
 FC ACTUAL.TXT EXPECTED.TXT > nul
 if ERRORLEVEL 1 (
