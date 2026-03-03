@@ -1,12 +1,12 @@
 package bot.ai;
 
+import java.util.Optional;
+
 import com.google.genai.Client;
 import com.google.genai.types.Content;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.genai.types.Part;
-import com.google.genai.types.ThinkingConfig;
-import com.google.genai.types.ThinkingLevel;
 
 import bot.response.Response;
 
@@ -15,9 +15,13 @@ import bot.response.Response;
  */
 public class GeminiProcessor {
 
+    private final static String API_KEY = System.getenv("GEMINI_API_KEY");
+
     private final String model = "gemini-2.5-flash";
 
-    private final Client client = new Client();
+    private final Optional<Client> client = (API_KEY != null && !API_KEY.isBlank())
+        ? Optional.of(new Client())
+        : Optional.empty();
 
     private final GenerateContentConfig config;
 
@@ -36,9 +40,11 @@ public class GeminiProcessor {
 
     // for testing
     public String getResponse(String prompt) {
-        GenerateContentResponse response =
-        this.client.models.generateContent(this.model, "Hello there", this.config);
-
-        return response.text();
+         return this.client.map(
+            c -> {
+                GenerateContentResponse response = c.models.generateContent(this.model, prompt, this.config);
+                return response.text();
+            }
+        ).orElse("GeminiProcessor unavailable");
     }
 }
