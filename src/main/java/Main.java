@@ -54,6 +54,7 @@ public class Main extends Application {
             No syntax, no examples unless they ask about a specific command. \
             If they ask about one command specifically, then give its syntax and one example. \
             If they're just wandering off-topic, one intriguing sentence then pull them back.
+            Keep all responses brief — no more than 3 sentences unless detailing a specific command.
             """.formatted(Main.BOT_NAME);
 
     private Bot bot = new Bot(Main.BOT_NAME, Main.LINE_SEPARATOR, Main.SYSTEM_PROMPT);
