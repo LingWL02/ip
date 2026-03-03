@@ -25,7 +25,7 @@ class TestDeadline {
     }
 
     @Test
-    void toString_unmarked_withTime_correctFormat() {
+    void toString_unmarked_withTimeFormat() {
         Deadline d = new Deadline("submit report", SAMPLE_DT, true);
         String str = d.toString();
         assertTrue(str.startsWith("[D] [ ] submit report"));
@@ -33,7 +33,7 @@ class TestDeadline {
     }
 
     @Test
-    void toString_marked_withTime_correctFormat() {
+    void toString_marked_withTimeFormat() {
         Deadline d = new Deadline("submit report", SAMPLE_DT, true);
         d.mark();
         String str = d.toString();

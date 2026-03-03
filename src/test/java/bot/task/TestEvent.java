@@ -26,7 +26,7 @@ class TestEvent {
     }
 
     @Test
-    void toString_unmarked_withBothTimes_correctFormat() {
+    void toString_unmarked_withBothTimesFormat() {
         Event e = new Event("conference", FROM, true, TO, true);
         String str = e.toString();
         assertTrue(str.startsWith("[E] [ ] conference"));
