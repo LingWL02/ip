@@ -1,4 +1,4 @@
-import ai.GeminiProcessor;
+import bot.ai.GeminiProcessor;
 
 public class TestGemini {
 

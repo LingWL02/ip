@@ -9,6 +9,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import bot.ai.GeminiProcessor;
 import bot.cheerleader.Cheerleader;
 import bot.parser.RegexParser;
 import bot.response.Response;
@@ -78,6 +79,58 @@ public class Bot {
             (?:\\s+(?<index>.*))?\\s*$
             """;
 
+    private static final String DEFAULT_SYSTEM_PROMPT = """
+            You are a helpful task management assistant. \
+            Be concise, friendly, and practical in your responses. \
+            Keep all responses short — ideally one to three sentences.
+
+            The user interacts with a task manager that supports the following commands. \
+            When the user seems confused or asks for help, guide them to use the correct command syntax.
+
+            AVAILABLE COMMANDS:
+            - list
+                Shows all current tasks with their index numbers, types, completion status, and tags.
+
+            - todo <name>
+                Adds a simple to-do task. Example: todo Buy groceries
+
+            - deadline <name> -by <YYYY-MM-DD[, HH:MM]>
+                Adds a task with a deadline. The date is required; time is optional.
+                Example: deadline Submit report -by 2026-03-15
+                Example: deadline Submit report -by 2026-03-15, 23:59
+
+            - event <name> -from <YYYY-MM-DD[, HH:MM]> -to <YYYY-MM-DD[, HH:MM]>
+                Adds an event with a start and end datetime. Dates are required; times are optional.
+                Example: event Team meeting -from 2026-03-10, 14:00 -to 2026-03-10, 15:00
+
+            - mark <index>
+                Marks the task at the given index as completed. Example: mark 2
+
+            - unmark <index>
+                Marks the task at the given index as not completed. Example: unmark 2
+
+            - delete <index>
+                Permanently removes the task at the given index. Example: delete 3
+
+            - find <keyword>
+                Searches task names for the given keyword. Example: find report
+
+            - tag <index> -names <name1, name2, ...>
+                Attaches one or more alphanumeric tags to a task. Example: tag 1 -names work, urgent
+
+            - untag <index> -names <name1, name2, ...>
+                Removes specific tags from a task. Example: untag 1 -names urgent
+
+            - cheer
+                Displays a random motivational message.
+
+            - bye
+                Exits the application.
+
+            If the user asks about something unrelated to task management, \
+            you may still help them briefly, but gently redirect them back to their tasks.
+            """;
+
     /**
      * The display name of the chatbot.
      */
@@ -114,30 +167,46 @@ public class Bot {
 
     private final Cheerleader cheerleader = new Cheerleader(".\\data\\cheer.txt");
 
+    private final GeminiProcessor geminiProcessor;
+
     /**
-     * Constructs a new App instance with the specified bot name and line separator.
+     * Constructs a new Bot instance with the specified bot name and line separator.
      *
-     * @param name       The display name of the chatbot.
-     * @param lineSeparator The string used to separate output lines for formatting.
+     * @param name              The display name of the chatbot.
+     * @param lineSeparator     The string used to separate output lines for formatting.
+     * @param geminiSystemPrompt The system prompt for the Gemini AI.
      */
-    public Bot(String name, String lineSeparator) {
-        assert name != null : "Bot name cannot be null";
-        assert !name.trim().isEmpty() : "Bot name cannot be empty";
-        assert lineSeparator != null : "Line separator cannot be null";
-        this.name = name;
-        this.lineSeparator = lineSeparator;
+    public Bot(String name, String lineSeparator, String geminiSystemPrompt) {
+        this(name, lineSeparator, true, geminiSystemPrompt);
     }
 
     /**
      * Constructs a new Bot instance with the specified bot name, line separator, and persistence mode.
      *
-     * @param name The display name of the chatbot.
-     * @param lineSeperator The string used to separate output lines for formatting.
-     * @param isPersistent Whether the bot should persist data to storage.
+     * @param name              The display name of the chatbot.
+     * @param lineSeparator     The string used to separate output lines for formatting.
+     * @param isPersistent      Whether the bot should persist data to storage.
+     * @param geminiSystemPrompt The system prompt for the Gemini AI.
      */
-    public Bot(String name, String lineSeperator, Boolean isPersistent) {
-        this(name, lineSeperator);
+    public Bot(String name, String lineSeparator, Boolean isPersistent, String geminiSystemPrompt) {
+        assert name != null : "Bot name cannot be null";
+        assert !name.trim().isEmpty() : "Bot name cannot be empty";
+        assert lineSeparator != null : "Line separator cannot be null";
+        this.name = name;
+        this.lineSeparator = lineSeparator;
+        this.geminiProcessor = new GeminiProcessor(geminiSystemPrompt);
         this.isPersistent = isPersistent;
+    }
+
+    /**
+     * Constructs a new Bot instance without a Gemini system prompt.
+     *
+     * @param name          The display name of the chatbot.
+     * @param lineSeparator The string used to separate output lines for formatting.
+     * @param isPersistent  Whether the bot should persist data to storage.
+     */
+    public Bot(String name, String lineSeparator, Boolean isPersistent) {
+        this(name, lineSeparator, isPersistent, Bot.DEFAULT_SYSTEM_PROMPT);
     }
 
     /**

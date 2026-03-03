@@ -14,7 +14,7 @@ class TestBot {
 
     @BeforeEach
     void setUp() {
-        bot = new Bot("TestBot", "====================");
+        bot = new Bot("TestBot", "====================", false);
     }
 
     @Test

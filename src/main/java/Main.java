@@ -11,7 +11,7 @@ import ui.MainWindow;
  */
 public class Main extends Application {
 
-    private Bot bot = new Bot("Epstein Bot", "_".repeat(50));
+    private Bot bot = new Bot("Epstein Bot", "_".repeat(50), true);
 
     @Override
     public void start(Stage stage) {
