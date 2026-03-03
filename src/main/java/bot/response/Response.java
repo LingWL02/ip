@@ -18,6 +18,8 @@ public class Response {
         INFO,
         /** A cheerleading / motivational message. */
         CHEER,
+        /** Unrecognized input — not a known command. */
+        UNKNOWN,
         /** Any error – bad arguments, missing flags, internal failures, etc. */
         ERROR
     }

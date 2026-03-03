@@ -40,35 +40,45 @@ public class GeminiProcessor {
         String history = historyContext.isBlank()
             ? ""
             : """
-            CONVERSATION HISTORY (for context only — use it to maintain continuity, \
-            refer back when relevant, and avoid repeating yourself):
+            CONVERSATION HISTORY (for context only) — use it to maintain continuity, \
+            refer back when relevant: \
             %s
 
             """.formatted(historyContext);
 
-        String prompt = response.getType() == Response.Type.ERROR
+        String prompt =
+            (response.getType() == Response.Type.UNKNOWN)
             ? """
-            %sThe user typed something that isn't a recognized command: "%s"
-            Determine their intent:
-            - If they seem to be asking for help, a command list, or what the bot can do \
-            (e.g. "help", "what can you do", "commands", "how do I..."), respond by walking \
-            them through the available commands in your persona — list each command with its \
-            syntax and a short example. Be their guide, not a bouncer.
-            - If it looks like a typo or near-miss of a real command, call it out and show \
-            the correct syntax with an example.
-            - If it's genuinely off-topic or nonsensical, acknowledge it briefly in character \
-            and nudge them back toward their tasks.
-            Keep the response concise and in persona. Do not use markdown.
-            """.formatted(history, userInput)
+            %sThe user's input didn't match any command. Stay fully in persona and respond naturally based \
+            on what they seem to want:
+            - If it reads like casual conversation, small talk, or a follow-up to the chat \
+            history — just talk back. Be engaging, witty, in character. No need to mention \
+            commands unless they come up naturally.
+            - If they seem to be asking what the bot can do or asking for help — give a SHORT \
+            list of command names with a one-liner each. No syntax or examples unless they ask \
+            about one specific command.
+            - If they're asking about a specific command — give its syntax and one example only.
+            - If it looks like a typo of a real command — correct it with the right syntax and \
+            one example in one sentence.
+            Use the conversation history to maintain continuity. \
+            Keep the response concise and fully in persona. No markdown.
+            User Input: %s \
+            Response type: %s \
+            Original message: %s
+            """.formatted(history, userInput, response.getType().name(), response.getMessage())
             : """
             %sRewrite the following bot response in your persona. \
-            Preserve all key information exactly — do not add, remove, or change any facts, \
+            Stay fully in character — do not sound robotic or generic. \
+            Preserve all key information exactly: do not add, remove, or change any facts, \
             command syntax, task names, dates, or indices. \
+            If the user's input feels conversational, let your personality shine through \
+            while still delivering the information cleanly. \
             User Input: %s \
             Response type: %s \
             Original message: %s
             """.formatted(history, userInput, response.getType().name(), response.getMessage());
 
+        System.out.println("GeminiProcessor prompt:\n" + prompt + "\n\n");
         Response augmentedResponse = this.client.map(
             c -> {
                 GenerateContentResponse genResponse = c.models.generateContent(this.model, prompt, this.config);
@@ -77,9 +87,7 @@ public class GeminiProcessor {
             }
         ).orElse(response);
 
-        historyContext += "\nUser Input: " + userInput
-            + "\nBot Response Type: " + response.getType().name()
-            + "\nBot Response: " + augmentedResponse.getMessage();
+        historyContext += "\nUser Input: " + userInput + "\nBot Response: " + augmentedResponse.getMessage();
 
         // Keep only the last 50 lines of history
         String[] lines = historyContext.split("\n", -1);

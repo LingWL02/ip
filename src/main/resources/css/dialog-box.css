@@ -70,6 +70,13 @@
     -fx-font-style: italic;
 }
 
+/* UNKNOWN: neutral warm tone for conversational responses */
+.unknown-label {
+    -fx-background-color: #fdf8f0;
+    -fx-text-fill: #5a4a3a;
+    -fx-border-color: transparent transparent transparent #c8a97e;
+}
+
 /* ── Avatar circle ────────────────────────────────────────── */
 #displayPicture {
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 6, 0.4, 0, 2);

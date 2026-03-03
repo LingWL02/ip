@@ -97,6 +97,7 @@ public class DialogBox extends HBox {
     private void applyResponseStyle(Response.Type type) {
         String cssClass = switch (type) {
         case ERROR -> "error-label";
+        case UNKNOWN -> "unknown-label";
         case SUCCESS -> "success-label";
         case INFO -> "info-label";
         case CHEER -> "cheer-label";

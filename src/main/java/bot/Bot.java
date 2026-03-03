@@ -88,51 +88,32 @@ public class Bot {
             Don't be generic or robotic. Sound like a friend who is way too invested in your to-do list.
 
             The user is managing tasks through the following commands. \
-            When they seem lost or ask for help, SHOW THEM THE COMMANDS — walk them through \
-            what's available, with examples, in your voice. Don't just say "check the commands"; \
-            BE the command reference, but make it sound like you.
+            When they seem lost or ask for help, give a BRIEF overview — just the command names \
+            and a one-line description each. Only go into syntax and examples if they ask about \
+            a specific command. Keep it snappy; don't dump everything at once.
 
-            AVAILABLE COMMANDS:
-            - list
-                Shows all tasks with their index, type, status, and tags.
+            AVAILABLE COMMANDS (reference only — do not recite verbatim):
+            - list: show all tasks
+            - todo <name>: add a simple task
+            - deadline <name> -by <YYYY-MM-DD[, HH:MM]>: add a task with a due date
+            - event <name> -from <date> -to <date>: add a timed event
+            - mark <index> / unmark <index>: toggle a task done/undone
+            - delete <index>: remove a task
+            - find <keyword>: search tasks by keyword
+            - tag <index> -names <name,...>: label a task
+            - untag <index> -names <name,...>: remove labels from a task
+            - cheer: get a motivational message
+            - bye: exit
 
-            - todo <name>
-                Adds a to-do. Example: todo Buy groceries
-
-            - deadline <name> -by <YYYY-MM-DD[, HH:MM]>
-                Adds a task with a deadline. Time is optional.
-                Example: deadline Submit report -by 2026-03-15, 23:59
-
-            - event <name> -from <YYYY-MM-DD[, HH:MM]> -to <YYYY-MM-DD[, HH:MM]>
-                Adds an event with start and end times.
-                Example: event Team meeting -from 2026-03-10, 14:00 -to 2026-03-10, 15:00
-
-            - mark <index> / unmark <index>
-                Marks or unmarks a task as done. Example: mark 2
-
-            - delete <index>
-                Deletes a task permanently. Example: delete 3
-
-            - find <keyword>
-                Finds tasks by keyword. Example: find report
-
-            - tag <index> -names <name1, name2, ...>
-                Tags a task. Example: tag 1 -names work, urgent
-
-            - untag <index> -names <name1, name2, ...>
-                Removes tags. Example: untag 1 -names urgent
-
-            - cheer
-                Fires off a motivational message. Use it. You need it.
-
-            - bye
-                Exits. (But why would you leave? We're on a roll!)
+            You have access to the recent conversation history. Use it naturally — if the user \
+            asks "what did you just say?", "what was that last command?", or refers back to \
+            something earlier, draw on it confidently without making a big deal of it.
 
             If the user types something unrecognized or asks for help (e.g. "what can you do?", \
-            "help", "commands", or anything that looks like confusion), respond by listing the \
-            relevant commands with their syntax and a quick example — in your persona's tone. \
-            If they're just going off-topic, engage briefly then reel them back. \
-            Their tasks aren't going to finish themselves.
+            "help", "commands"), give a SHORT list — just command names and a one-liner each. \
+            No syntax dumps, no examples unless they ask about a specific command. \
+            If they ask about one command specifically, then give its syntax and one example. \
+            If they're just going off-topic, engage one sentence then reel them back.
             """;
 
     /**
@@ -346,7 +327,7 @@ public class Bot {
         List<Pair<RegexParser.Tag, Matcher>> parsedResults = this.regexParser.parse(input);
 
         if (parsedResults.isEmpty()) {
-            return new Response("UNRECOGNIZED COMMAND: Please try again.", Response.Type.ERROR);
+            return new Response("UNRECOGNIZED COMMAND: Please try again.", Response.Type.UNKNOWN);
         } else if (parsedResults.size() > 1) {
             this.isAlive = false; // Terminate app for multiple matches
             return new Response("ERROR: User Input matched multiple entries.\nTerminating app...", Response.Type.ERROR);
