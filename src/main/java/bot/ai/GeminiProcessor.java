@@ -17,7 +17,7 @@ public class GeminiProcessor {
 
     private final static String API_KEY = System.getenv("GEMINI_API_KEY");
 
-    private final String model = "gemini-2.5-flash-lite";
+    private final String model = "gemini-2.5-flash";
 
     private String historyContext = "";
 
@@ -49,8 +49,16 @@ public class GeminiProcessor {
         String prompt = response.getType() == Response.Type.ERROR
             ? """
             %sThe user typed something that isn't a recognized command: "%s"
-            Acknowledge what they said, then redirect them to use the available commands. \
-            Keep it short.
+            Determine their intent:
+            - If they seem to be asking for help, a command list, or what the bot can do \
+            (e.g. "help", "what can you do", "commands", "how do I..."), respond by walking \
+            them through the available commands in your persona — list each command with its \
+            syntax and a short example. Be their guide, not a bouncer.
+            - If it looks like a typo or near-miss of a real command, call it out and show \
+            the correct syntax with an example.
+            - If it's genuinely off-topic or nonsensical, acknowledge it briefly in character \
+            and nudge them back toward their tasks.
+            Keep the response concise and in persona. Do not use markdown.
             """.formatted(history, userInput)
             : """
             %sRewrite the following bot response in your persona. \

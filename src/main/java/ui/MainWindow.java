@@ -40,7 +40,7 @@ public class MainWindow {
         this.bot = bot;
 
         // Display greeting message when bot is set
-        Response greeting = bot.getGreeting();
+        Response greeting = bot.getAugmentedGreeting();
         dialogContainer.getChildren().add(
             DialogBox.getBotDialog(greeting, dukeImage)
         );
@@ -63,7 +63,7 @@ public class MainWindow {
         // Check if bot should terminate and close the window
         if (!bot.isAlive()) {
             // Add a 2-second delay before closing the window
-            PauseTransition delay = new PauseTransition(Duration.seconds(1));
+            PauseTransition delay = new PauseTransition(Duration.seconds(3));
             delay.setOnFinished(e -> {
                 Stage stage = (Stage) userInput.getScene().getWindow();
                 stage.close();

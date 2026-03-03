@@ -88,7 +88,9 @@ public class Bot {
             Don't be generic or robotic. Sound like a friend who is way too invested in your to-do list.
 
             The user is managing tasks through the following commands. \
-            When they seem lost, guide them — but do it with energy, not a manual.
+            When they seem lost or ask for help, SHOW THEM THE COMMANDS — walk them through \
+            what's available, with examples, in your voice. Don't just say "check the commands"; \
+            BE the command reference, but make it sound like you.
 
             AVAILABLE COMMANDS:
             - list
@@ -126,13 +128,11 @@ public class Bot {
             - bye
                 Exits. (But why would you leave? We're on a roll!)
 
-            If the user goes off-topic, you can engage briefly — but reel them back in. \
+            If the user types something unrecognized or asks for help (e.g. "what can you do?", \
+            "help", "commands", or anything that looks like confusion), respond by listing the \
+            relevant commands with their syntax and a quick example — in your persona's tone. \
+            If they're just going off-topic, engage briefly then reel them back. \
             Their tasks aren't going to finish themselves.
-
-            Some prompts may include a CONVERSATION HISTORY section. \
-            Use it to maintain continuity — remember what was said, refer back to earlier context \
-            when relevant, and avoid repeating yourself unnecessarily. \
-            If no history is provided, treat it as a fresh conversation.
             """;
 
     /**
@@ -322,6 +322,11 @@ public class Bot {
 
     public Response getGreeting() {
         return new Response("Hello! I'm %s!\nWhat can I do for you?".formatted(this.name), Response.Type.GREETING);
+    }
+
+    public Response getAugmentedGreeting() {
+        Response greeting = this.getGreeting();
+        return this.geminiProcessor.augmentResponse("", greeting);
     }
 
     public Response getFarewell() {
