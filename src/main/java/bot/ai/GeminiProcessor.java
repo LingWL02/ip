@@ -15,7 +15,7 @@ import bot.response.Response;
  */
 public class GeminiProcessor {
 
-    private final static String API_KEY = System.getenv("GEMINI_API_KEY");
+    private static final String API_KEY = System.getenv("GEMINI_API_KEY");
 
     private final String model = "gemini-2.5-flash";
 
@@ -27,6 +27,11 @@ public class GeminiProcessor {
 
     private final GenerateContentConfig config;
 
+    /**
+     * Constructs a GeminiProcessor with the given system prompt.
+     *
+     * @param systemPrompt The system instruction that defines the AI's persona and behaviour.
+     */
     public GeminiProcessor(String systemPrompt) {
         config = GenerateContentConfig.builder()
             .systemInstruction(
@@ -36,6 +41,14 @@ public class GeminiProcessor {
     }
 
 
+    /**
+     * Augments a bot response using Gemini, rewriting it in the configured persona.
+     * For unrecognized inputs, Gemini determines intent and responds accordingly.
+     *
+     * @param userInput The original user input string.
+     * @param response  The raw bot response to augment.
+     * @return A new Response with the Gemini-augmented message, or the original if unavailable.
+     */
     public Response augmentResponse(String userInput, Response response) {
         String history = historyContext.isBlank()
             ? ""
@@ -46,8 +59,7 @@ public class GeminiProcessor {
 
             """.formatted(historyContext);
 
-        String prompt =
-            (response.getType() == Response.Type.UNKNOWN)
+        String prompt = (response.getType() == Response.Type.UNKNOWN)
             ? """
             %sThe user's input didn't match any command. Stay fully in persona and respond naturally based \
             on what they seem to want:
@@ -99,7 +111,7 @@ public class GeminiProcessor {
 
     // for testing
     public String getResponse(String prompt) {
-         return this.client.map(
+        return this.client.map(
             c -> {
                 GenerateContentResponse response = c.models.generateContent(this.model, prompt, this.config);
                 return response.text();
