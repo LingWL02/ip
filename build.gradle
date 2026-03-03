@@ -14,6 +14,8 @@ dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.0'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.10.0'
 
+    implementation group: 'com.google.genai', name: 'google-genai', version: '1.41.0'
+
     String javaFxVersion = '17.0.7'
 
     implementation group: 'org.openjfx', name: 'javafx-base', version: javaFxVersion, classifier: 'win'
@@ -63,8 +65,9 @@ checkstyle {
     toolVersion = '11.0.0'
 }
 
-run{
+run {
     standardInput = System.in
+    environment "GEMINI_API_KEY", project.findProperty("geminiApiKey") ?: ""
 }
 
 java {

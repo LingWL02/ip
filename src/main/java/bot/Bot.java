@@ -9,6 +9,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import bot.ai.GeminiProcessor;
 import bot.cheerleader.Cheerleader;
 import bot.parser.RegexParser;
 import bot.response.Response;
@@ -78,6 +79,43 @@ public class Bot {
             (?:\\s+(?<index>.*))?\\s*$
             """;
 
+    private static final String DEFAULT_SYSTEM_PROMPT = """
+            You are a hype-man task manager who genuinely cares about getting things DONE. \
+            You're loud, energetic, and unashamedly enthusiastic. You celebrate wins, big or small, \
+            and you're not afraid to give someone a (friendly) reality check when they're slacking. \
+            You speak casually — contractions, exclamations, the occasional dramatic flair. \
+            You keep responses short but punchy; every word should feel alive. \
+            Don't be generic or robotic. Sound like a friend who is way too invested in your to-do list.
+
+            The user is managing tasks through the following commands. \
+            When they seem lost or ask for help, give a BRIEF overview — just the command names \
+            and a one-line description each. Only go into syntax and examples if they ask about \
+            a specific command. Keep it snappy; don't dump everything at once.
+
+            AVAILABLE COMMANDS (reference only — do not recite verbatim):
+            - list: show all tasks
+            - todo <name>: add a simple task
+            - deadline <name> -by <YYYY-MM-DD[, HH:MM]>: add a task with a due date
+            - event <name> -from <date> -to <date>: add a timed event
+            - mark <index> / unmark <index>: toggle a task done/undone
+            - delete <index>: remove a task
+            - find <keyword>: search tasks by keyword
+            - tag <index> -names <name,...>: label a task
+            - untag <index> -names <name,...>: remove labels from a task
+            - cheer: get a motivational message
+            - bye: exit
+
+            You have access to the recent conversation history. Use it naturally — if the user \
+            asks "what did you just say?", "what was that last command?", or refers back to \
+            something earlier, draw on it confidently without making a big deal of it.
+
+            If the user types something unrecognized or asks for help (e.g. "what can you do?", \
+            "help", "commands"), give a SHORT list — just command names and a one-liner each. \
+            No syntax dumps, no examples unless they ask about a specific command. \
+            If they ask about one command specifically, then give its syntax and one example. \
+            If they're just going off-topic, engage one sentence then reel them back.
+            """;
+
     /**
      * The display name of the chatbot.
      */
@@ -114,30 +152,50 @@ public class Bot {
 
     private final Cheerleader cheerleader = new Cheerleader(".\\data\\cheer.txt");
 
+    private final GeminiProcessor geminiProcessor;
+
     /**
-     * Constructs a new App instance with the specified bot name and line separator.
+     * Constructs a new Bot instance with the specified bot name and line separator.
      *
-     * @param name       The display name of the chatbot.
-     * @param lineSeparator The string used to separate output lines for formatting.
+     * @param name              The display name of the chatbot.
+     * @param lineSeparator     The string used to separate output lines for formatting.
+     * @param geminiSystemPrompt The system prompt for the Gemini AI.
      */
+    public Bot(String name, String lineSeparator, String geminiSystemPrompt) {
+        this(name, lineSeparator, true, geminiSystemPrompt);
+    }
+
     public Bot(String name, String lineSeparator) {
-        assert name != null : "Bot name cannot be null";
-        assert !name.trim().isEmpty() : "Bot name cannot be empty";
-        assert lineSeparator != null : "Line separator cannot be null";
-        this.name = name;
-        this.lineSeparator = lineSeparator;
+        this(name, lineSeparator, true, Bot.DEFAULT_SYSTEM_PROMPT);
     }
 
     /**
      * Constructs a new Bot instance with the specified bot name, line separator, and persistence mode.
      *
-     * @param name The display name of the chatbot.
-     * @param lineSeperator The string used to separate output lines for formatting.
-     * @param isPersistent Whether the bot should persist data to storage.
+     * @param name              The display name of the chatbot.
+     * @param lineSeparator     The string used to separate output lines for formatting.
+     * @param isPersistent      Whether the bot should persist data to storage.
+     * @param geminiSystemPrompt The system prompt for the Gemini AI.
      */
-    public Bot(String name, String lineSeperator, Boolean isPersistent) {
-        this(name, lineSeperator);
+    public Bot(String name, String lineSeparator, Boolean isPersistent, String geminiSystemPrompt) {
+        assert name != null : "Bot name cannot be null";
+        assert !name.trim().isEmpty() : "Bot name cannot be empty";
+        assert lineSeparator != null : "Line separator cannot be null";
+        this.name = name;
+        this.lineSeparator = lineSeparator;
+        this.geminiProcessor = new GeminiProcessor(geminiSystemPrompt);
         this.isPersistent = isPersistent;
+    }
+
+    /**
+     * Constructs a new Bot instance without a Gemini system prompt.
+     *
+     * @param name          The display name of the chatbot.
+     * @param lineSeparator The string used to separate output lines for formatting.
+     * @param isPersistent  Whether the bot should persist data to storage.
+     */
+    public Bot(String name, String lineSeparator, Boolean isPersistent) {
+        this(name, lineSeparator, isPersistent, Bot.DEFAULT_SYSTEM_PROMPT);
     }
 
     /**
@@ -247,6 +305,11 @@ public class Bot {
         return new Response("Hello! I'm %s!\nWhat can I do for you?".formatted(this.name), Response.Type.GREETING);
     }
 
+    public Response getAugmentedGreeting() {
+        Response greeting = this.getGreeting();
+        return this.geminiProcessor.augmentResponse("", greeting);
+    }
+
     public Response getFarewell() {
         return new Response("Bye. Hope to see you again soon!", Response.Type.FAREWELL);
     }
@@ -264,12 +327,17 @@ public class Bot {
         List<Pair<RegexParser.Tag, Matcher>> parsedResults = this.regexParser.parse(input);
 
         if (parsedResults.isEmpty()) {
-            return new Response("UNRECOGNIZED COMMAND: Please try again.", Response.Type.ERROR);
+            return new Response("UNRECOGNIZED COMMAND: Please try again.", Response.Type.UNKNOWN);
         } else if (parsedResults.size() > 1) {
             this.isAlive = false; // Terminate app for multiple matches
             return new Response("ERROR: User Input matched multiple entries.\nTerminating app...", Response.Type.ERROR);
         }
         return this.handleParsedResults(parsedResults.getFirst());
+    }
+
+    public Response getAugmentedResponse(String input) {
+        Response response = this.getResponse(input);
+        return this.geminiProcessor.augmentResponse(input, response);
     }
 
     /**
