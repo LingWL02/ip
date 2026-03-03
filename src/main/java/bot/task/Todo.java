@@ -60,8 +60,11 @@ public class Todo extends Task {
      */
     public static Task deserialize(String serializedTask) {
         String[] serializedParts = serializedTask.split(DELIMITER);
-        assert serializedParts.length == 3 : "Serialized Todo must have 3 parts";
-
+        if (serializedParts.length != 3) {
+            throw new IllegalArgumentException(
+                "Invalid serialized Todo: expected 3 fields but got %d".formatted(serializedParts.length)
+            );
+        }
         return new Todo(
             serializedParts[0],
             serializedParts[1],

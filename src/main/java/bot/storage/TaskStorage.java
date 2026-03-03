@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,19 +67,41 @@ public class TaskStorage {
             parentDir.mkdirs();
         }
         if (!this.file.createNewFile()) {
+            int lineNumber = 0;
             try (BufferedReader reader = new BufferedReader(new FileReader(this.file))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    String[] tagAndSerializedTask = line.split(DELIMITER);
-                    assert tagAndSerializedTask.length == 2 : "Invalid serialized task line format";
+                    lineNumber++;
+                    String[] tagAndSerializedTask = line.split(DELIMITER, 2);
+                    if (tagAndSerializedTask.length != 2) {
+                        throw new StorageCorruptedException(
+                            "Line %d in '%s' is missing the record delimiter — "
+                            + "the file may have been manually edited or corrupted."
+                            .formatted(lineNumber, this.file.getPath())
+                        );
+                    }
                     String tag = tagAndSerializedTask[0];
                     String serializedTask = tagAndSerializedTask[1];
-                    assert this.deserializationTagTaskMap.containsKey(tag) : "Unknown deserialization tag: " + tag;
+                    if (!this.deserializationTagTaskMap.containsKey(tag)) {
+                        throw new StorageCorruptedException(
+                            "Line %d in '%s' has an unrecognised task type '%s'."
+                            .formatted(lineNumber, this.file.getPath(), tag)
+                        );
+                    }
 
                     Class<? extends Task> taskClass = this.deserializationTagTaskMap.get(tag);
                     Method deserializeMethod = taskClass.getMethod("deserialize", String.class);
-                    Task task = (Task) deserializeMethod.invoke(null, serializedTask);
-                    taskList.add(task);
+                    try {
+                        Task task = (Task) deserializeMethod.invoke(null, serializedTask);
+                        taskList.add(task);
+                    } catch (InvocationTargetException e) {
+                        Throwable cause = e.getCause();
+                        throw new StorageCorruptedException(
+                            "Line %d in '%s' contains malformed task data (%s)."
+                            .formatted(lineNumber, this.file.getPath(),
+                                cause != null ? cause.getMessage() : e.getMessage())
+                        );
+                    }
                 }
             }
         }

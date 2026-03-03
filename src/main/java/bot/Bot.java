@@ -13,8 +13,10 @@ import bot.ai.GeminiProcessor;
 import bot.cheerleader.Cheerleader;
 import bot.parser.RegexParser;
 import bot.response.Response;
+import bot.storage.StorageCorruptedException;
 import bot.storage.TaskStorage;
 import bot.task.Deadline;
+import bot.task.DuplicateTaskException;
 import bot.task.Event;
 import bot.task.Task;
 import bot.task.TaskIsMarkedException;
@@ -206,15 +208,27 @@ public class Bot {
     public void run() {
         System.out.printf("%s\n\n", this.lineSeparator);
 
+        String storageWarning = null;
         try {
             this.initialize();
+        } catch (StorageCorruptedException exception) {
+            // Non-fatal: warn the user and continue with an empty in-memory task list.
+            storageWarning = "WARNING: The task storage file could not be loaded.\n"
+                    + exception.getMessage()
+                    + "\nStarting with an empty task list. New tasks will NOT be saved "
+                    + "until the storage file is fixed or deleted.";
         } catch (Exception exception) {
             this.printToStdOut(
                     "EXCEPTION: %s\nTerminating app...".formatted(exception.toString())
             );
             return;
         }
-        this.printToStdOut(this.getGreeting().getMessage());
+
+        String greeting = this.getGreeting().getMessage();
+        if (storageWarning != null) {
+            greeting = storageWarning + "\n\n" + greeting;
+        }
+        this.printToStdOut(greeting);
 
         while (this.isAlive) {
             if (!this.appScanner.hasNextLine()) {
@@ -286,15 +300,23 @@ public class Bot {
 
     /**
      * Initializes the bot by configuring all necessary components.
+     * The parser and cheerleader are configured before the task list so that, if
+     * storage is corrupted, those components are still operational and the caller
+     * can handle the {@link StorageCorruptedException} gracefully.
      *
-     * @throws Exception if any component fails to initialize
+     * @throws StorageCorruptedException if the storage file is malformed
+     * @throws Exception if any other component fails to initialize
      */
     public void initialize() throws Exception {
         try {
             this.configureTaskStorage();
-            this.configureTaskList();
             this.configureParser();
             this.configureCheerLeader();
+            this.configureTaskList(); // last — may throw StorageCorruptedException
+        } catch (StorageCorruptedException exception) {
+            // Parser and cheerleader are already configured; re-throw so the caller
+            // can decide whether to continue without persistence.
+            throw exception;
         } catch (Exception exception) {
             this.isAlive = false;
             throw exception;
@@ -492,10 +514,21 @@ public class Bot {
             );
         }
         name = name.strip();
+        if (name.isEmpty()) {
+            return this.formatIllegalArguments(
+                    "todo <name>",
+                    "Command 'todo' expects argument 'name' to be non-empty."
+            );
+        }
         Todo todo = new Todo(name);
         try {
             this.taskList.add(todo);
             return new Response("Todo added:\n%s".formatted(todo.toString()), Response.Type.SUCCESS);
+        } catch (DuplicateTaskException exception) {
+            return this.formatDisallowed(
+                    "todo <name>",
+                    exception.getMessage()
+            );
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             return this.formatInternalError(
                     "An internal error occured: %s".formatted(exception.getMessage())
@@ -530,6 +563,13 @@ public class Bot {
         if (name == null) {
             return formatMissingArguments(expectedFormatMessage, "Command 'deadline' expects argument 'name'");
         }
+        name = name.strip();
+        if (name.isEmpty()) {
+            return formatIllegalArguments(
+                    expectedFormatMessage,
+                    "Command 'deadline' expects argument 'name' to be non-empty."
+            );
+        }
         String yearString = matcher.group("year");
         String monthString = matcher.group("month");
         String dayString = matcher.group("day");
@@ -550,6 +590,8 @@ public class Bot {
             return new Response("Deadline added:\n%s".formatted(deadline.toString()), Response.Type.SUCCESS);
         } catch (DateTimeException exception) {
             return formatIllegalArguments(expectedFormatMessage, exception.getMessage());
+        } catch (DuplicateTaskException exception) {
+            return formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             return this.formatInternalError(
                     "An internal error occured: %s".formatted(exception.getMessage())
@@ -598,6 +640,13 @@ public class Bot {
         if (name == null) {
             return this.formatMissingArguments(expectedFormatMessage, "Command 'event' expects argument 'name'.");
         }
+        name = name.strip();
+        if (name.isEmpty()) {
+            return this.formatIllegalArguments(
+                    expectedFormatMessage,
+                    "Command 'event' expects argument 'name' to be non-empty."
+            );
+        }
         int fromYear = Integer.parseUnsignedInt(matcher.group("fromYear"));
         int fromMonth = Integer.parseUnsignedInt(matcher.group("fromMonth"));
         int fromDay = Integer.parseUnsignedInt(matcher.group("fromDay"));
@@ -619,11 +668,22 @@ public class Bot {
         try {
             LocalDateTime startDateTime = LocalDateTime.of(fromYear, fromMonth, fromDay, fromHour, fromMin);
             LocalDateTime endDateTime = LocalDateTime.of(toYear, toMonth, toDay, toHour, toMin);
-            Event event = new Event(name.strip(), startDateTime, hasStartTime, endDateTime, hasEndTime);
+
+            if (!startDateTime.isBefore(endDateTime)) {
+                return formatIllegalArguments(
+                        expectedFormatMessage,
+                        "Event start time (%s) must be strictly before end time (%s)."
+                                .formatted(startDateTime, endDateTime)
+                );
+            }
+
+            Event event = new Event(name, startDateTime, hasStartTime, endDateTime, hasEndTime);
             this.taskList.add(event);
             return new Response("Event added:\n%s".formatted(event.toString()), Response.Type.SUCCESS);
         } catch (DateTimeException exception) {
             return formatIllegalArguments(expectedFormatMessage, exception.getMessage());
+        } catch (DuplicateTaskException exception) {
+            return formatDisallowed(expectedFormatMessage, exception.getMessage());
         } catch (IOException | ReflectiveOperationException | SecurityException exception) {
             return this.formatInternalError(
                     "An internal error occured: %s".formatted(exception.getMessage())
@@ -680,6 +740,12 @@ public class Bot {
             );
         }
         keyword = keyword.strip();
+        if (keyword.isEmpty()) {
+            return this.formatIllegalArguments(
+                    expectedFormatMessage,
+                    "Command 'find' expects argument 'keyword' to be non-empty."
+            );
+        }
         List<Pair<Integer, Task>> foundTasks = this.taskList.findTasks(keyword);
         StringBuilder bobTheBuilder = new StringBuilder("Here are the matching tasks:\n");
         for (int i = 0; i < foundTasks.size(); i++) {

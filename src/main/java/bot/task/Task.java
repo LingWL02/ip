@@ -169,4 +169,28 @@ public abstract class Task {
             .map(TaskTag::toString)
             .collect(Collectors.joining(", "));
     }
+
+    /**
+     * Compares this task to another by class type and name.
+     * Subclasses should override this to include their additional fields.
+     *
+     * @param obj The object to compare to.
+     * @return {@code true} if both tasks are of the same type with the same name.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Task other = (Task) obj;
+        return this.name.equals(other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(getClass(), this.name);
+    }
 }
