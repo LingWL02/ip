@@ -1,8 +1,10 @@
 package bot.ai;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import com.google.genai.Client;
+import com.google.genai.errors.GenAiIOException;
 import com.google.genai.types.Content;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.GenerateContentResponse;
@@ -21,7 +23,7 @@ public class GeminiProcessor {
 
     private String historyContext = "";
 
-    private final Optional<Client> client = (API_KEY != null && !API_KEY.isBlank())
+    private Optional<Client> client = (API_KEY != null && !API_KEY.isBlank())
         ? Optional.of(Client.builder().apiKey(API_KEY).build())
         : Optional.empty();
 
@@ -90,32 +92,30 @@ public class GeminiProcessor {
             Original Response: %s
             """.formatted(history, userInput, response.getType().name(), response.getMessage());
 
-        Response augmentedResponse = this.client.map(
-            c -> {
-                GenerateContentResponse genResponse = c.models.generateContent(this.model, prompt, this.config);
-                String augmentedMessage = genResponse.text();
-                return new Response(augmentedMessage, response.getType());
+        try {
+            Response augmentedResponse = this.client.map(
+                c -> {
+                    GenerateContentResponse genResponse = c.models.generateContent(this.model, prompt, this.config);
+                    String augmentedMessage = genResponse.text();
+                    return new Response(augmentedMessage, response.getType());
+                }
+            ).orElse(response);
+
+            historyContext += "\nUser Input: " + userInput + "\nBot Response: " + augmentedResponse.getMessage();
+
+            // Keep only the last 50 lines of history
+            String[] lines = historyContext.split("\n", -1);
+            if (lines.length > 50) {
+                historyContext = String.join("\n", Arrays.copyOfRange(lines, lines.length - 50, lines.length));
             }
-        ).orElse(response);
-
-        historyContext += "\nUser Input: " + userInput + "\nBot Response: " + augmentedResponse.getMessage();
-
-        // Keep only the last 50 lines of history
-        String[] lines = historyContext.split("\n", -1);
-        if (lines.length > 50) {
-            historyContext = String.join("\n", java.util.Arrays.copyOfRange(lines, lines.length - 50, lines.length));
+            return augmentedResponse;
+        } catch (GenAiIOException e) {
+            this.client = Optional.empty();
+            return new Response(
+                    response.getMessage() + "\n(Personality augmentation disabled,"
+                    + " please check your internet connection and restart the application.)",
+                    response.getType()
+            );
         }
-
-        return augmentedResponse;
-    }
-
-    // for testing
-    public String getResponse(String prompt) {
-        return this.client.map(
-            c -> {
-                GenerateContentResponse response = c.models.generateContent(this.model, prompt, this.config);
-                return response.text();
-            }
-        ).orElse("GeminiProcessor unavailable");
     }
 }
