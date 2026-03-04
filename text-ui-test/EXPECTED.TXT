@@ -1,6 +1,6 @@
 __________________________________________________
 
-Hello! I'm Lil Bro!
+Hello! I'm Lil Bro, your task manager bot!
 What can I do for you?
 __________________________________________________
 
