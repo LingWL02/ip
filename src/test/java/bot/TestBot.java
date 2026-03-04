@@ -20,7 +20,7 @@ class TestBot {
     @Test
     void constructor_validInputs_createsBot() {
         // Test that bot is created successfully and getGreeting works
-        String expectedGreeting = "Hello! I'm TestBot!\nWhat can I do for you?";
+        String expectedGreeting = "Hello! I'm TestBot, your task manager bot!\nWhat can I do for you?";
         Response greeting = bot.getGreeting();
         assertEquals(expectedGreeting, greeting.getMessage());
         assertEquals(Response.Type.GREETING, greeting.getType());
