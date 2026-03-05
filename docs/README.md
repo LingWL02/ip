@@ -24,12 +24,21 @@ let in on a secret you don't yet deserve.
 ## Quick Start
 
 1. Ensure you have Java 17 or above installed.
-2. Download the latest `ip-shadow.jar` from the releases page.
-3. Run the application:
+2. Download the latest release ZIP from the releases page.
+3. Extract the ZIP — it contains:
    ```
-   java -jar ip-shadow.jar
+   javafx-jeff.jar
+   data/
+       cheer.txt
    ```
-4. The GUI will launch. Jeff greets you immediately, personality and all.
+4. **Run the JAR from the extracted folder** (so `data/cheer.txt` is found alongside it):
+   ```
+   java -jar javafx-jeff.jar
+   ```
+5. The GUI will launch. Jeff greets you immediately, personality and all.
+
+> **Important:** Keep the JAR and the `data/` folder together. Moving the JAR elsewhere without
+> the `data/` folder means `cheer` messages won't be available.
 
 ---
 
@@ -229,10 +238,9 @@ Got it! I've untagged this task:
 
 ## Getting a Cheer
 
-Retrieves a random motivational message from Jeff's cheer file
-([`data/cheer.txt`](../data/cheer.txt)).
-These are irreverent, tongue-in-cheek messages designed to keep you going
-(or at least entertained). Some examples from the file:
+Retrieves a random motivational message from `data/cheer.txt`, which ships inside the release ZIP.
+These are irreverent, tongue-in-cheek messages designed to keep you going (or at least entertained).
+Some examples:
 
 > *"Done is better than perfect, but napping is better than done."*
 >
@@ -248,6 +256,10 @@ Hard work pays off eventually, but laziness pays off RIGHT NOW.
 
 The [`Cheerleader`](../src/main/java/bot/cheerleader/Cheerleader.java) class loads the file
 on startup and selects a random line each time `cheer` is called.
+
+> **Customising cheers:** Open `data/cheer.txt` in any text editor and add, remove, or edit lines —
+> one message per line. Changes take effect on the next launch. If `data/cheer.txt` is missing,
+> Jeff will respond with `No cheer for you :(` until the file is restored.
 
 ---
 
@@ -318,20 +330,22 @@ just without the charm. Restore your internet connection and restart to bring hi
 ### Building from source
 
 If you manually build the project from source rather than using the official release,
-you will need to supply your own Google Gemini API key. Set the `GEMINI_API_KEY`
-environment variable before running:
+you can supply your own Google Gemini API key by setting the `GEMINI_API_KEY` environment
+variable before running the JAR. Jeff will use it in place of the default configuration.
 
 **On Windows (PowerShell):**
 ```powershell
 $env:GEMINI_API_KEY = "your_api_key_here"
-java -jar ip-shadow.jar
+java -jar javafx-jeff.jar
 ```
 
 **On macOS/Linux:**
 ```bash
 export GEMINI_API_KEY="your_api_key_here"
-java -jar ip-shadow.jar
+java -jar javafx-jeff.jar
 ```
+
+If no environment variable is set, Jeff will fall back to the default configuration.
 
 ---
 

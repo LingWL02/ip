@@ -52,6 +52,10 @@ public class GeminiProcessor {
      * @return the API key string, or null if not found
      */
     private static String resolveApiKey() {
+        String envKey = System.getenv("GEMINI_API_KEY");
+        if (envKey != null && !envKey.isBlank()) {
+            return envKey;
+        }
         try (InputStream is = GeminiProcessor.class.getClassLoader()
                 .getResourceAsStream("config.properties")) {
             if (is != null) {
@@ -63,9 +67,9 @@ public class GeminiProcessor {
                 }
             }
         } catch (IOException e) {
-            // fall through to env var
+            // fall through to null
         }
-        return System.getenv("GEMINI_API_KEY");
+        return null;
     }
 
 
