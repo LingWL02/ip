@@ -56,8 +56,8 @@ application {
 }
 
 shadowJar {
-    archiveFileName = "javafx-duke.jar"
-    archiveBaseName = "javafx-duke"
+    archiveFileName = "javafx-jeff.jar"
+    archiveBaseName = "javafx-jeff"
     archiveClassifier = null
 }
 

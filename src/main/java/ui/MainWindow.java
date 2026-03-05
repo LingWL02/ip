@@ -28,8 +28,8 @@ public class MainWindow {
 
     private Bot bot;
 
-    private Image userImage = new Image(this.getClass().getResourceAsStream("/images/pdidd.jpg"));
-    private Image dukeImage = new Image(this.getClass().getResourceAsStream("/images/jefep.jpg"));
+    private Image userImage = new Image(this.getClass().getResourceAsStream("/images/user.png"));
+    private Image jeffImage = new Image(this.getClass().getResourceAsStream("/images/jeff.png"));
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
@@ -42,7 +42,7 @@ public class MainWindow {
         // Display greeting message when bot is set
         Response greeting = bot.getAugmentedGreeting();
         dialogContainer.getChildren().add(
-            DialogBox.getBotDialog(greeting, dukeImage)
+            DialogBox.getBotDialog(greeting, jeffImage)
         );
     }
 
@@ -56,7 +56,7 @@ public class MainWindow {
         Response response = bot.getAugmentedResponse(input);
         dialogContainer.getChildren().addAll(
             DialogBox.getUserDialog(input, userImage),
-            DialogBox.getBotDialog(response, dukeImage)
+            DialogBox.getBotDialog(response, jeffImage)
         );
         userInput.clear();
 

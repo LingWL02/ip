@@ -81,8 +81,8 @@ public class Bot {
             (?:\\s+(?<index>.*))?\\s*$
             """;
 
-    private static final String DEFAULT_SYSTEM_PROMPT = """
-            You are a hype-man task manager who genuinely cares about getting things DONE. \
+    private static final String DEFAULT_SYSTEM_PROMPT_TEMPLATE = """
+            You are %s, a hype-man task manager who genuinely cares about getting things DONE. \
             You're loud, energetic, and unashamedly enthusiastic. You celebrate wins, big or small, \
             and you're not afraid to give someone a (friendly) reality check when they're slacking. \
             You speak casually — contractions, exclamations, the occasional dramatic flair. \
@@ -98,7 +98,7 @@ public class Bot {
             - list: show all tasks
             - todo <name>: add a simple task
             - deadline <name> -by <YYYY-MM-DD[, HH:MM]>: add a task with a due date
-            - event <name> -from <date> -to <date>: add a timed event
+            - event <name> -from <YYYY-MM-DD[, HH:MM]> -to <YYYY-MM-DD[, HH:MM]>: add a timed event
             - mark <index> / unmark <index>: toggle a task done/undone
             - delete <index>: remove a task
             - find <keyword>: search tasks by keyword
@@ -168,7 +168,7 @@ public class Bot {
     }
 
     public Bot(String name, String lineSeparator) {
-        this(name, lineSeparator, true, Bot.DEFAULT_SYSTEM_PROMPT);
+        this(name, lineSeparator, true, Bot.DEFAULT_SYSTEM_PROMPT_TEMPLATE.formatted(name));
     }
 
     /**
@@ -197,7 +197,7 @@ public class Bot {
      * @param isPersistent  Whether the bot should persist data to storage.
      */
     public Bot(String name, String lineSeparator, Boolean isPersistent) {
-        this(name, lineSeparator, isPersistent, Bot.DEFAULT_SYSTEM_PROMPT);
+        this(name, lineSeparator, isPersistent, Bot.DEFAULT_SYSTEM_PROMPT_TEMPLATE.formatted(name));
     }
 
     /**
@@ -324,7 +324,8 @@ public class Bot {
     }
 
     public Response getGreeting() {
-        return new Response("Hello! I'm %s!\nWhat can I do for you?".formatted(this.name), Response.Type.GREETING);
+        String message = "Hello! I'm %s, your task manager bot!\nWhat can I do for you?".formatted(this.name);
+        return new Response(message, Response.Type.GREETING);
     }
 
     public Response getAugmentedGreeting() {

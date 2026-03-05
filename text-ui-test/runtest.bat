@@ -53,7 +53,7 @@ echo [√] Build successful
 echo.
 
 echo [4/4] Running tests...
-java -cp ..\build\libs\javafx-duke.jar Duke < input.txt > ACTUAL.TXT
+java -cp ..\build\libs\javafx-jeff.jar Duke < input.txt > ACTUAL.TXT
 
 FC ACTUAL.TXT EXPECTED.TXT > nul
 if ERRORLEVEL 1 (
