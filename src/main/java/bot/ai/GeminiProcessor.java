@@ -1,7 +1,10 @@
 package bot.ai;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Properties;
 
 import com.google.genai.Client;
 import com.google.genai.errors.GenAiIOException;
@@ -17,7 +20,7 @@ import bot.response.Response;
  */
 public class GeminiProcessor {
 
-    private static final String API_KEY = System.getenv("GEMINI_API_KEY");
+    private static final String API_KEY = resolveApiKey();
 
     private final String model = "gemini-2.5-flash";
 
@@ -40,6 +43,29 @@ public class GeminiProcessor {
                 Content.fromParts(Part.fromText(systemPrompt))
             )
             .build();
+    }
+
+    /**
+     * Resolves the Gemini API key by checking the bundled config.properties resource first,
+     * then falling back to the GEMINI_API_KEY environment variable.
+     *
+     * @return the API key string, or null if not found
+     */
+    private static String resolveApiKey() {
+        try (InputStream is = GeminiProcessor.class.getClassLoader()
+                .getResourceAsStream("config.properties")) {
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                String key = props.getProperty("gemini.api.key", "").trim();
+                if (!key.isEmpty()) {
+                    return key;
+                }
+            }
+        } catch (IOException e) {
+            // fall through to env var
+        }
+        return System.getenv("GEMINI_API_KEY");
     }
 
 
